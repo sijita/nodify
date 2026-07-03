@@ -156,6 +156,23 @@ export function mockRemoveSkill(agentId: string, name: string): void {
   if (agent) agent.skills = agent.skills.filter((s) => s.name !== name);
 }
 
+const mockRules: Record<string, string> = {
+  "claude-code":
+    "# Reglas globales\n\n- Escribe tests primero.\n- Commits en Conventional Commits.\n",
+  codex: "# AGENTS.md\n\nUsa el estilo del repo. No toques secretos.\n",
+  opencode: "",
+};
+
+export function mockReadRules(agentId: string): string {
+  return mockRules[agentId] ?? "";
+}
+
+export function mockWriteRules(agentId: string, content: string): void {
+  mockRules[agentId] = content;
+  const agent = state.find((a) => a.id === agentId);
+  if (agent) agent.config.rulesPresent = content.trim().length > 0;
+}
+
 /** Bundle canónico de ejemplo (navegador): sin valores de secretos (solo referencias). */
 export function mockExportBundle(): string {
   const bundle = {
