@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import {
   mockExportBundle,
   mockInstall,
+  mockListProviders,
   mockReadRules,
   mockRemove,
   mockRemoveSkill,
@@ -11,7 +12,7 @@ import {
   mockShareSkill,
   mockWriteRules,
 } from "./mock";
-import type { AgentScan, DiffEntry } from "./types";
+import type { AgentScan, DiffEntry, ProviderInfo } from "./types";
 
 const NATIVE_ONLY = "Sync con git requiere la app nativa (Tauri).";
 
@@ -65,6 +66,13 @@ export function shareSkill(fromId: string, toId: string, name: string): Promise<
 export function removeSkill(agentId: string, name: string): Promise<void> {
   if (!isTauri()) return Promise.resolve(mockRemoveSkill(agentId, name));
   return invoke("remove_skill", { agentId, name });
+}
+
+// ---------- Proveedores ----------
+
+export function listProviders(agentId: string): Promise<ProviderInfo[]> {
+  if (!isTauri()) return Promise.resolve(mockListProviders(agentId));
+  return invoke<ProviderInfo[]>("list_providers", { agentId });
 }
 
 // ---------- Reglas ----------

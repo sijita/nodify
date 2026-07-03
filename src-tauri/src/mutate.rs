@@ -141,6 +141,15 @@ pub fn remove_skill(agent_id: String, name: String) -> Result<(), String> {
     remove_skill_fs(&skills_dir(id, &current_env()), &name).map_err(|e| e.to_string())
 }
 
+// ---------- Proveedores (solo lectura; sin valores de secretos) ----------
+
+#[tauri::command]
+pub fn list_providers(agent_id: String) -> Result<Vec<nodify_core::ProviderInfo>, String> {
+    let (id, adapter) = adapter_for(&agent_id)?;
+    let raw = std::fs::read_to_string(config_path(id, &current_env())).unwrap_or_default();
+    Ok(adapter.parse_providers(&raw))
+}
+
 // ---------- Reglas (CLAUDE.md / AGENTS.md) ----------
 
 #[tauri::command]

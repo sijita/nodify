@@ -4,6 +4,7 @@
 //! y devuelven texto; el backup/atómico lo pone la capa de IO.
 
 use crate::mcp::CanonicalMcp;
+use crate::provider::ProviderInfo;
 
 #[derive(Debug, thiserror::Error)]
 pub enum AdapterError {
@@ -45,4 +46,8 @@ pub trait Adapter {
     /// Fija el modelo por defecto en el texto crudo del archivo de settings,
     /// preservando el resto. Si `raw` está vacío, crea la estructura mínima.
     fn set_model(&self, raw: &str, model: &str) -> Result<String, AdapterError>;
+
+    /// Lee los proveedores definidos en la config (sin valores de secretos, solo el
+    /// nombre de la env var de la key). Vacío si el agente no los declara en archivo.
+    fn parse_providers(&self, raw: &str) -> Vec<ProviderInfo>;
 }

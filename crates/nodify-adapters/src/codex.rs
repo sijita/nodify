@@ -91,6 +91,29 @@ impl Adapter for CodexAdapter {
         doc["model"] = value(model);
         Ok(doc.to_string())
     }
+
+    /// Tablas `[model_providers.<id>]` con `name`, `base_url`, `env_key`.
+    fn parse_providers(&self, raw: &str) -> Vec<nodify_core::ProviderInfo> {
+        let Ok(doc) = raw.parse::<DocumentMut>() else {
+            return Vec::new();
+        };
+        let Some(t) = doc.get("model_providers").and_then(Item::as_table_like) else {
+            return Vec::new();
+        };
+        let mut out = Vec::new();
+        for (id, item) in t.iter() {
+            let Some(p) = item.as_table_like() else { continue };
+            let s = |k: &str| p.get(k).and_then(Item::as_str).map(str::to_string);
+            out.push(nodify_core::ProviderInfo {
+                id: id.to_string(),
+                name: s("name"),
+                base_url: s("base_url"),
+                key_env: s("env_key"),
+            });
+        }
+        out.sort_by(|a, b| a.id.cmp(&b.id));
+        out
+    }
 }
 
 fn parse_doc(raw: &str) -> Result<DocumentMut, AdapterError> {

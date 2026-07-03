@@ -76,6 +76,12 @@ impl Adapter for ClaudeAdapter {
         obj.insert("model".into(), Value::String(model.to_string()));
         serialize(&root)
     }
+
+    /// Claude no declara proveedores en archivo (usa `ANTHROPIC_API_KEY`/`ANTHROPIC_BASE_URL`
+    /// por entorno). Se expone informativamente desde la capa superior, no aquí.
+    fn parse_providers(&self, _raw: &str) -> Vec<nodify_core::ProviderInfo> {
+        Vec::new()
+    }
 }
 
 fn parse_root(raw: &str) -> Result<Value, AdapterError> {

@@ -1,13 +1,13 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { agentMeta } from "@/lib/agents";
-import { readRules, writeRules } from "@/lib/tauri";
-import type { AgentScan } from "@/lib/types";
+import { listProviders, readRules, writeRules } from "@/lib/tauri";
+import type { AgentScan, ProviderInfo } from "@/lib/types";
 import { Save, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { mutate } from "swr";
 
-type Tab = "overview" | "rules";
+type Tab = "overview" | "providers" | "rules";
 
 /** Panel de detalle deslizante por agente (drawer del mockup). */
 export function AgentDrawer({ agent, onClose }: { agent: AgentScan; onClose: () => void }) {
@@ -50,7 +50,7 @@ export function AgentDrawer({ agent, onClose }: { agent: AgentScan; onClose: () 
         </header>
 
         <nav className="flex border-border border-b px-6">
-          {(["overview", "rules"] as Tab[]).map((t) => (
+          {(["overview", "providers", "rules"] as Tab[]).map((t) => (
             <button
               key={t}
               type="button"
@@ -67,7 +67,9 @@ export function AgentDrawer({ agent, onClose }: { agent: AgentScan; onClose: () 
         </nav>
 
         <div className="flex-1 overflow-auto p-6">
-          {tab === "overview" ? <Overview agent={agent} /> : <RulesTab agentId={agent.id} />}
+          {tab === "overview" && <Overview agent={agent} />}
+          {tab === "providers" && <ProvidersTab agentId={agent.id} />}
+          {tab === "rules" && <RulesTab agentId={agent.id} />}
         </div>
       </aside>
     </>
@@ -108,6 +110,46 @@ function Overview({ agent }: { agent: AgentScan }) {
           {agent.skills.length === 0 && <li className="text-faint">—</li>}
         </ul>
       </Section>
+    </>
+  );
+}
+
+function ProvidersTab({ agentId }: { agentId: string }) {
+  const [providers, setProviders] = useState<ProviderInfo[] | null>(null);
+
+  useEffect(() => {
+    listProviders(agentId)
+      .then(setProviders)
+      .catch(() => setProviders([]));
+  }, [agentId]);
+
+  if (!providers) return <p className="text-faint text-xs">{"> cargando…"}</p>;
+
+  return (
+    <>
+      <p className="mb-4 font-sans text-muted-foreground text-xs">
+        Proveedores definidos en la config. Las API keys <strong>no se muestran</strong>: solo el
+        nombre de la variable de entorno que las aporta (ADR-0004).
+      </p>
+      {providers.length === 0 ? (
+        <p className="text-faint text-xs">
+          {"> este agente no declara proveedores en archivo (usa env vars)."}
+        </p>
+      ) : (
+        <ul className="flex flex-col gap-3">
+          {providers.map((p) => (
+            <li key={p.id} className="border border-border p-3 rounded-[var(--radius-sm)]">
+              <div className="font-semibold text-[13px]">{p.name ?? p.id}</div>
+              {p.baseUrl && <div className="mt-1 truncate text-faint text-xs">{p.baseUrl}</div>}
+              {p.keyEnv && (
+                <div className="mt-1 text-muted-foreground text-xs">
+                  key: <span className="text-warning">${`{${p.keyEnv}}`}</span>
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
     </>
   );
 }
