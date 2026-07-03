@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+/* Tema por clase `.dark` (convención shadcn), no por prefers-color-scheme. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+  Sistema de diseño Nodify — migrado del mockup de Claude Design (nodify-design-system).
+  Monocromo "tinta sobre papel", accent puro (#fff/#0a0a0a). Semánticos apagados SOLO estado.
+  Mono-forward: Geist Mono es la voz principal; Geist para prosa. Ver docs/design-system.md.
+*/
+:root {
+  /* claro */
+  --background: #f7f7f7;
+  --surface: #ffffff;
+  --elevated: #ffffff;
+  --elevated-2: #f0f0f0;
+  --foreground: #1f1f1f;
+  --muted-foreground: #6a6a6a;
+  --faint: #a6a6a6;
+  --border: #e4e4e4;
+  --border-strong: #d3d3d3;
+  --primary: #111111;
+  --primary-foreground: #ffffff;
+  --success: #4f7a5a;
+  --warning: #8a6a2f;
+  --danger: #a85a4c;
+  --grid: rgba(0, 0, 0, 0.032);
+
+  /* radios: superficies casi rectas, controles con radio pequeño (design-system) */
+  --radius-sm: 2px;
+  --radius: 7px;
+  --radius-lg: 14px;
+
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+.dark {
+  --background: #0d0d0d;
+  --surface: #101010;
+  --elevated: #141414;
+  --elevated-2: #1b1b1b;
+  --foreground: #e8e8e8;
+  --muted-foreground: #8a8a8a;
+  --faint: #565656;
+  --border: #242424;
+  --border-strong: #333333;
+  --primary: #ffffff;
+  --primary-foreground: #0a0a0a;
+  --success: #7ea884;
+  --warning: #c2a15f;
+  --danger: #c27f74;
+  --grid: rgba(255, 255, 255, 0.028);
+}
+
+/* Exponer tokens a utilidades Tailwind (bg-surface, text-faint, border-border-strong…). */
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-elevated: var(--elevated);
+  --color-elevated-2: var(--elevated-2);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-faint: var(--faint);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  --radius-sm: var(--radius-sm);
+  --radius: var(--radius);
+  --radius-lg: var(--radius-lg);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+*,
+::selection {
+  box-sizing: border-box;
+}
+::selection {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-mono); /* mono-forward */
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-sans {
+  font-family: var(--font-sans);
+}
+
+/* animaciones del mockup */
+@keyframes nf-slide {
+  from {
+    transform: translateX(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+@keyframes nf-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}

@@ -1,0 +1,28 @@
+[package]
+name = "nodify"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Gestor de configuración entre agentes de IA de código"
+repository = "https://github.com/leancore/nodify"
+
+[lib]
+name = "nodify_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[[bin]]
+name = "nodify"
+path = "src/main.rs"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Core de Nodify (workspace hermano, consumido por path)
+nodify-core = { path = "../crates/nodify-core" }
+nodify-adapters = { path = "../crates/nodify-adapters" }
+nodify-io = { path = "../crates/nodify-io" }

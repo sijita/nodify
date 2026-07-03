@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d0d0d; --bg-elev:#141414; --bg-elev2:#1b1b1b; --surface:#101010;
+  --text:#e8e8e8; --text-dim:#8a8a8a; --text-faint:#565656;
+  --border:#242424; --border-strong:#333333;
+  --accent:#ffffff; --accent-contrast:#0a0a0a;
+  --ok:#7ea884; --warn:#c2a15f; --err:#c27f74;
+  --grid:rgba(255,255,255,0.028);
+}
+[data-theme="light"]{
+  --bg:#f7f7f7; --bg-elev:#ffffff; --bg-elev2:#f0f0f0; --surface:#ffffff;
+  --text:#1f1f1f; --text-dim:#6a6a6a; --text-faint:#a6a6a6;
+  --border:#e4e4e4; --border-strong:#d3d3d3;
+  --accent:#111111; --accent-contrast:#ffffff;
+  --ok:#4f7a5a; --warn:#8a6a2f; --err:#a85a4c;
+  --grid:rgba(0,0,0,0.032);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+body{background:var(--bg);}
+::selection{background:var(--accent);color:var(--accent-contrast);}
+@keyframes nfSlide{from{transform:translateX(30px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes nfFade{from{opacity:0}to{opacity:1}}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:var(--border-strong)}
+::-webkit-scrollbar-track{background:transparent}
+</style>
+</helmet>
+<div data-theme="{{ theme }}" style="height:100vh;width:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Geist Mono',ui-monospace,monospace;position:relative;">
+
+  <div aria-hidden="true" style="position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:44px 44px;">
+    <span style="position:absolute;top:16px;left:16px;font-family:'Geist Mono',monospace;font-size:18px;color:var(--text-faint);opacity:0.55;">┌</span>
+    <span style="position:absolute;top:16px;right:16px;font-family:'Geist Mono',monospace;font-size:18px;color:var(--text-faint);opacity:0.55;">┐</span>
+    <span style="position:absolute;bottom:16px;left:16px;font-family:'Geist Mono',monospace;font-size:18px;color:var(--text-faint);opacity:0.55;">└</span>
+    <span style="position:absolute;bottom:16px;right:16px;font-family:'Geist Mono',monospace;font-size:18px;color:var(--text-faint);opacity:0.55;">┘</span>
+    <span style="position:absolute;top:9%;left:5%;font-family:'Geist Mono',monospace;font-size:13px;color:var(--text-faint);opacity:0.4;">+</span>
+    <span style="position:absolute;top:23%;left:10%;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-faint);opacity:0.3;">//</span>
+    <span style="position:absolute;top:41%;left:4%;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-faint);opacity:0.3;">01</span>
+    <span style="position:absolute;top:57%;left:9%;font-family:'Geist Mono',monospace;font-size:12px;color:var(--text-faint);opacity:0.35;">&lt;/&gt;</span>
+    <span style="position:absolute;top:73%;left:4%;font-family:'Geist Mono',monospace;font-size:13px;color:var(--text-faint);opacity:0.4;">+</span>
+    <span style="position:absolute;top:88%;left:11%;font-family:'Geist Mono',monospace;font-size:14px;color:var(--text-faint);opacity:0.22;">░▒</span>
+    <span style="position:absolute;top:7%;right:6%;font-family:'Geist Mono',monospace;font-size:13px;color:var(--text-faint);opacity:0.4;">×</span>
+    <span style="position:absolute;top:20%;right:10%;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-faint);opacity:0.3;">{ }</span>
+    <span style="position:absolute;top:35%;right:4%;font-family:'Geist Mono',monospace;font-size:12px;color:var(--text-faint);opacity:0.35;">→</span>
+    <span style="position:absolute;top:51%;right:8%;font-family:'Geist Mono',monospace;font-size:13px;color:var(--text-faint);opacity:0.4;">+</span>
+    <span style="position:absolute;top:67%;right:4%;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-faint);opacity:0.3;">[ ]</span>
+    <span style="position:absolute;top:83%;right:10%;font-family:'Geist Mono',monospace;font-size:13px;color:var(--text-faint);opacity:0.22;">▒░</span>
+    <span style="position:absolute;top:30%;left:47%;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-faint);opacity:0.22;">::</span>
+    <span style="position:absolute;bottom:6%;left:44%;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-faint);opacity:0.22;">0x1F</span>
+    <span style="position:absolute;top:4%;left:24%;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-faint);opacity:0.3;">&amp;&amp;</span>
+    <span style="position:absolute;top:4%;left:63%;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-faint);opacity:0.3;">1010</span>
+    <span style="position:absolute;top:15%;left:33%;font-family:'Geist Mono',monospace;font-size:12px;color:var(--text-faint);opacity:0.28;">-&gt;</span>
+    <span style="position:absolute;top:16%;left:54%;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-faint);opacity:0.26;">~/</span>
+    <span style="position:absolute;top:27%;left:16%;font-family:'Geist Mono',monospace;font-size:12px;color:var(--text-faint);opacity:0.3;">+</span>
+    <span style="position:absolute;top:28%;left:73%;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-faint);opacity:0.3;">==</span>
+    <span style="position:absolute;top:38%;left:29%;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-faint);opacity:0.24;">0b1</span>
+    <span style="position:absolute;top:44%;left:67%;font-family:'Geist Mono',monospace;font-size:12px;color:var(--text-faint);opacity:0.28;">::</span>
+    <span style="position:absolute;top:47%;left:38%;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-faint);opacity:0.22;">fn()</span>
+    <span style="position:absolute;top:55%;left:24%;font-family:'Geist Mono',monospace;font-size:13px;color:var(--text-faint);opacity:0.3;">×</span>
+    <span style="position:absolute;top:60%;left:71%;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-faint);opacity:0.28;">0xFF</span>
+    <span style="position:absolute;top:70%;left:34%;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-faint);opacity:0.26;">#!</span>
+    <span style="position:absolute;top:72%;left:63%;font-family:'Geist Mono',monospace;font-size:12px;color:var(--text-faint);opacity:0.3;">+</span>
+    <span style="position:absolute;top:80%;left:20%;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-faint);opacity:0.24;">//</span>
+    <span style="position:absolute;top:82%;left:55%;font-family:'Geist Mono',monospace;font-size:12px;color:var(--text-faint);opacity:0.26;">[ ]</span>
+    <span style="position:absolute;top:91%;left:30%;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-faint);opacity:0.24;">&lt;/&gt;</span>
+    <span style="position:absolute;top:92%;left:68%;font-family:'Geist Mono',monospace;font-size:13px;color:var(--text-faint);opacity:0.2;">▒</span>
+  </div>
+
+  <div style="{{ dockStyle }}">
+    <sc-for list="{{ navItems }}" as="item" hint-placeholder-count="4">
+      <button onClick="{{ item.onClick }}" style="{{ item.style }}">
+        <sc-if value="{{ item.isMatrix }}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></sc-if>
+        <sc-if value="{{ item.isAgents }}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg></sc-if>
+        <sc-if value="{{ item.isSecrets }}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="m10.85 12.15 6.15-6.15"/><path d="m18 5 2 2"/><path d="m15 8 2 2"/></svg></sc-if>
+        <sc-if value="{{ item.isSettings }}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="6" x2="9" y2="6"/><line x1="7" y1="6" x2="3" y2="6"/><circle cx="7" cy="6" r="2"/><line x1="21" y1="12" x2="13" y2="12"/><line x1="11" y1="12" x2="3" y2="12"/><circle cx="13" cy="12" r="2"/><line x1="21" y1="18" x2="16" y2="18"/><line x1="14" y1="18" x2="3" y2="18"/><circle cx="16" cy="18" r="2"/></svg></sc-if>
+        <span style="font-size:9px;letter-spacing:0.1em;">{{ item.label }}</span>
+      </button>
+    </sc-for>
+  </div>
+
+  <div style="{{ mainStyle }}">
+
+    <div style="max-width:1180px;margin:0 auto;">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:22px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:baseline;gap:12px;">
+          <span style="font-size:22px;font-weight:700;letter-spacing:0.14em;">NODIFY</span>
+          <span style="font-family:'Geist',sans-serif;font-size:12px;color:var(--text-dim);">agent control center</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="display:flex;align-items:center;gap:8px;border:1px solid var(--border);background:var(--surface);padding:0 10px;border-radius:2px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-faint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input value="{{ query }}" onChange="{{ onQuery }}" placeholder="filter config…" style="border:none;outline:none;background:transparent;color:var(--text);font-family:'Geist Mono',monospace;font-size:12px;padding:9px 2px;width:150px;" />
+          </div>
+          <button onClick="{{ toggleTheme }}" style="display:flex;align-items:center;justify-content:center;width:38px;height:36px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);border-radius:7px;cursor:pointer;" style-hover="border-color:var(--border-strong);color:var(--text);">
+            <sc-if value="{{ isDark }}" hint-placeholder-val="{{ true }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></sc-if>
+            <sc-if value="{{ isLight }}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></svg></sc-if>
+          </button>
+          <button style="display:flex;align-items:center;gap:8px;background:var(--accent);color:var(--accent-contrast);border:none;padding:9px 15px;border-radius:7px;font-family:'Geist Mono',monospace;font-size:12px;font-weight:500;letter-spacing:0.06em;cursor:pointer;" style-hover="opacity:0.88;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            SCAN
+          </button>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--nf-gap);margin-bottom:22px;">
+        <div style="border:1px solid var(--border);background:var(--surface);padding:var(--nf-card-pad);border-radius:2px;">
+          <div style="font-size:26px;font-weight:600;line-height:1;">{{ agentCount }}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:8px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-faint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg><span style="font-size:10px;letter-spacing:0.12em;color:var(--text-dim);">AGENTS</span></div>
+        </div>
+        <div style="border:1px solid var(--border);background:var(--surface);padding:var(--nf-card-pad);border-radius:2px;">
+          <div style="font-size:26px;font-weight:600;line-height:1;">{{ itemCount }}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:8px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-faint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/></svg><span style="font-size:10px;letter-spacing:0.12em;color:var(--text-dim);">CONFIG KEYS</span></div>
+        </div>
+        <div style="border:1px solid var(--border);background:var(--surface);padding:var(--nf-card-pad);border-radius:2px;">
+          <div style="font-size:26px;font-weight:600;line-height:1;color:var(--warn);">{{ differs }}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:8px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><path d="M11 18H8a2 2 0 0 1-2-2V9"/></svg><span style="font-size:10px;letter-spacing:0.12em;color:var(--text-dim);">DIFFERS</span></div>
+        </div>
+        <div style="border:1px solid var(--border);background:var(--surface);padding:var(--nf-card-pad);border-radius:2px;">
+          <div style="font-size:26px;font-weight:600;line-height:1;color:var(--err);">{{ errors }}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:8px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--err)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span style="font-size:10px;letter-spacing:0.12em;color:var(--text-dim);">ERRORS</span></div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:20px;margin-bottom:12px;flex-wrap:wrap;">
+        <span style="display:flex;gap:7px;align-items:center;font-size:10px;letter-spacing:0.08em;color:var(--text-dim);"><span style="color:var(--ok);font-size:13px;">✓</span>INSTALLED</span>
+        <span style="display:flex;gap:7px;align-items:center;font-size:10px;letter-spacing:0.08em;color:var(--text-dim);"><span style="color:var(--text-faint);font-size:13px;">–</span>MISSING</span>
+        <span style="display:flex;gap:7px;align-items:center;font-size:10px;letter-spacing:0.08em;color:var(--text-dim);"><span style="color:var(--warn);font-size:13px;">≠</span>DIFFERS</span>
+        <span style="display:flex;gap:7px;align-items:center;font-size:10px;letter-spacing:0.08em;color:var(--text-dim);"><span style="color:var(--err);font-size:13px;">✕</span>ERROR</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:250px repeat(3,minmax(0,1fr));border:1px solid var(--border);background:var(--surface);border-radius:2px;overflow:hidden;">
+
+        <div style="padding:var(--nf-card-pad);border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg-elev);display:flex;flex-direction:column;justify-content:flex-end;">
+          <span style="font-size:10px;letter-spacing:0.12em;color:var(--text-faint);">CONFIG&nbsp;&nbsp;×&nbsp;&nbsp;AGENT</span>
+        </div>
+
+        <sc-for list="{{ agents }}" as="agent" hint-placeholder-count="3">
+          <div onClick="{{ agent.onClick }}" style="padding:var(--nf-card-pad);border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg-elev);cursor:pointer;position:relative;" style-hover="background:var(--bg-elev2);">
+            <div style="display:flex;gap:11px;align-items:center;">
+              <div style="width:34px;height:34px;border:1px solid var(--border-strong);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;letter-spacing:0.04em;border-radius:2px;background:var(--surface);flex-shrink:0;">{{ agent.badge }}</div>
+              <div style="min-width:0;">
+                <div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ agent.name }}</div>
+                <div style="font-size:11px;color:var(--text-dim);">v{{ agent.version }}</div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--text-faint);margin-top:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ agent.path }}</div>
+            <div style="display:flex;gap:12px;margin-top:11px;font-size:11px;">
+              <span style="color:var(--ok);">✓ {{ agent.ok }}</span>
+              <span style="color:var(--warn);">≠ {{ agent.differs }}</span>
+              <span style="color:var(--err);">✕ {{ agent.error }}</span>
+            </div>
+            <sc-if value="{{ connectors }}" hint-placeholder-val="{{ true }}">
+              <div style="position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);width:7px;height:7px;background:var(--border-strong);border-radius:50%;"></div>
+            </sc-if>
+          </div>
+        </sc-for>
+
+        <sc-for list="{{ flatRows }}" as="row" hint-placeholder-count="10">
+          <div style="display:contents">
+            <sc-if value="{{ row.isBand }}" hint-placeholder-val="{{ false }}">
+              <div style="grid-column:1 / -1;background:var(--bg-elev);border-bottom:1px solid var(--border);padding:var(--nf-band-pad);display:flex;justify-content:space-between;align-items:center;">
+                <span style="display:flex;align-items:center;gap:9px;font-size:11px;letter-spacing:0.16em;color:var(--text-dim);font-weight:600;"><sc-if value="{{ row.iconMcp }}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2"/><rect width="20" height="8" x="2" y="14" rx="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg></sc-if><sc-if value="{{ row.iconEnv }}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"/><path d="M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"/></svg></sc-if><sc-if value="{{ row.iconPerm }}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg></sc-if><sc-if value="{{ row.iconHook }}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg></sc-if><span>{{ row.name }}</span></span>
+                <span style="font-size:11px;color:var(--text-faint);">{{ row.count }}</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{ row.isItem }}" hint-placeholder-val="{{ true }}">
+              <div style="padding:var(--nf-cell-pad);border-right:1px solid var(--border);border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:3px;">
+                <span style="font-size:13px;color:var(--text);">{{ row.key }}</span>
+                <span style="font-size:10px;letter-spacing:0.08em;color:var(--text-faint);">{{ row.scope }}</span>
+              </div>
+              <sc-for list="{{ row.cells }}" as="cell" hint-placeholder-count="3">
+                <div onClick="{{ cell.onClick }}" style="{{ cell.wrapStyle }}" style-hover="background:var(--bg-elev2);">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="{{ cell.glyphStyle }}">{{ cell.glyph }}</span>
+                    <span style="{{ cell.labelStyle }}">{{ cell.label }}</span>
+                  </div>
+                  <div style="font-size:12px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ cell.value }}</div>
+                </div>
+              </sc-for>
+            </sc-if>
+          </div>
+        </sc-for>
+
+      </div>
+
+      <div style="font-family:'Geist',sans-serif;font-size:11px;color:var(--text-faint);margin-top:14px;">Click any cell or agent header to open its detail panel.</div>
+
+    </div>
+  </div>
+
+  <sc-if value="{{ selected }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closePanel }}" style="position:absolute;inset:0;background:rgba(0,0,0,0.55);z-index:60;animation:nfFade .15s ease;"></div>
+    <div style="position:absolute;top:0;right:0;height:100%;width:480px;max-width:92vw;background:var(--bg-elev);border-left:1px solid var(--border-strong);box-shadow:-24px 0 70px rgba(0,0,0,0.5);z-index:61;display:flex;flex-direction:column;animation:nfSlide .2s ease;">
+
+      <div style="padding:22px 24px;border-bottom:1px solid var(--border);">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+          <div style="display:flex;gap:12px;align-items:center;">
+            <div style="width:40px;height:40px;border:1px solid var(--border-strong);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;border-radius:2px;background:var(--surface);">{{ selected.badge }}</div>
+            <div>
+              <div style="font-size:17px;font-weight:600;">{{ selected.name }}</div>
+              <div style="font-size:11px;color:var(--text-dim);">v{{ selected.version }} · {{ selected.configFile }}</div>
+            </div>
+          </div>
+          <button onClick="{{ closePanel }}" style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;border:1px solid var(--border);background:transparent;color:var(--text-dim);border-radius:7px;cursor:pointer;" style-hover="color:var(--text);border-color:var(--border-strong);">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div style="font-size:11px;color:var(--text-faint);margin-top:14px;">{{ selected.path }}</div>
+        <div style="display:flex;gap:14px;margin-top:12px;font-size:11px;">
+          <span style="color:var(--ok);">✓ {{ selected.ok }} INSTALLED</span>
+          <span style="color:var(--warn);">≠ {{ selected.differs }} DIFFERS</span>
+          <span style="color:var(--err);">✕ {{ selected.error }} ERROR</span>
+        </div>
+      </div>
+
+      <div style="display:flex;border-bottom:1px solid var(--border);padding:0 24px;">
+        <button onClick="{{ tabConfig }}" style="{{ configTabStyle }}">CONFIG</button>
+        <button onClick="{{ tabEnv }}" style="{{ envTabStyle }}">ENV</button>
+        <button onClick="{{ tabCmd }}" style="{{ cmdTabStyle }}">COMMANDS</button>
+      </div>
+
+      <div style="flex:1;overflow:auto;padding:8px 24px 32px;">
+
+        <sc-if value="{{ isConfigTab }}" hint-placeholder-val="{{ true }}">
+          <sc-for list="{{ selected.configSections }}" as="sec" hint-placeholder-count="3">
+            <div style="font-size:10px;letter-spacing:0.16em;color:var(--text-dim);font-weight:600;margin:20px 0 10px;">{{ sec.name }}</div>
+            <sc-for list="{{ sec.items }}" as="it" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);">
+                <div style="width:120px;font-size:12px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ it.key }}</div>
+                <div style="flex:1;border:1px solid var(--border);background:var(--surface);padding:8px 10px;font-size:12px;color:var(--text-dim);border-radius:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ it.value }}</div>
+                <span style="{{ it.glyphStyle }}">{{ it.glyph }}</span>
+              </div>
+            </sc-for>
+          </sc-for>
+        </sc-if>
+
+        <sc-if value="{{ isEnvTab }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:10px;letter-spacing:0.16em;color:var(--text-dim);font-weight:600;margin:20px 0 10px;">ENVIRONMENT</div>
+          <sc-for list="{{ selected.envItems }}" as="it" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);">
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:12px;">{{ it.key }}</div>
+                <div style="font-size:11px;color:var(--text-faint);margin-top:3px;font-family:'Geist Mono',monospace;">{{ it.value }}</div>
+              </div>
+              <span style="{{ it.pillStyle }}">{{ it.label }}</span>
+            </div>
+          </sc-for>
+        </sc-if>
+
+        <sc-if value="{{ isCmdTab }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:10px;letter-spacing:0.16em;color:var(--text-dim);font-weight:600;margin:20px 0 10px;">LAUNCH</div>
+          <div style="border:1px solid var(--border);background:var(--surface);padding:12px 14px;border-radius:2px;font-size:12px;color:var(--text);"><span style="color:var(--text-faint);">$ </span>{{ selected.launch }}</div>
+          <div style="font-size:10px;letter-spacing:0.16em;color:var(--text-dim);font-weight:600;margin:24px 0 10px;">HOOKS</div>
+          <sc-for list="{{ selected.hookItems }}" as="it" hint-placeholder-count="2">
+            <div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);">
+              <div style="width:120px;font-size:12px;flex-shrink:0;">{{ it.key }}</div>
+              <div style="flex:1;font-size:12px;color:var(--text-dim);">{{ it.value }}</div>
+              <span style="{{ it.glyphStyle }}">{{ it.glyph }}</span>
+            </div>
+          </sc-for>
+          <div style="font-size:10px;letter-spacing:0.16em;color:var(--text-dim);font-weight:600;margin:24px 0 10px;">{{ selected.configFile }}</div>
+          <pre style="background:var(--surface);border:1px solid var(--border);padding:14px;font-size:12px;line-height:1.65;color:var(--text-dim);overflow:auto;white-space:pre;border-radius:2px;font-family:'Geist Mono',monospace;margin:0;">{{ selected.previewCode }}</pre>
+        </sc-if>
+
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;dockPosition&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;left&quot;,&quot;bottom&quot;],&quot;default&quot;:&quot;left&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Layout&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;compact&quot;,&quot;comfortable&quot;],&quot;default&quot;:&quot;compact&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Layout&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;dark&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Appearance&quot;},&quot;showConnectors&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Layout&quot;}}">
+class Component extends DCLogic {
+  state = { theme:null, activeNav:'matrix', selectedAgent:null, detailTab:'config', query:'' };
+
+  agents = [
+    { id:'claude', name:'Claude Code', badge:'CC', version:'1.4.2', path:'/usr/local/bin/claude', configFile:'~/.claude/settings.json',
+      previewCode:'{\n  "model": "claude-3.7-sonnet",\n  "mcpServers": {\n    "filesystem": { "command": "npx", "args": ["@mcp/fs"] },\n    "github": { "url": "https://api.github.com" }\n  },\n  "permissions": { "shell": "ask" }\n}' },
+    { id:'codex', name:'Codex', badge:'CX', version:'0.9.1', path:'/opt/codex/bin/codex', configFile:'~/.codex/config.toml',
+      previewCode:'model = "gpt-4o"\n\n[mcp.filesystem]\ncommand = "npx @mcp/fs"\n\n[mcp.github]\nurl = "https://ghe.corp.net"   # differs\n\n[permissions]\nnetwork = "deny"   # conflicts with allow' },
+    { id:'opencode', name:'OpenCode', badge:'OC', version:'0.6.0', path:'~/.local/bin/opencode', configFile:'~/.config/opencode/opencode.json',
+      previewCode:'{\n  "model": "llama-3.3-70b",\n  "mcpServers": {\n    "filesystem": { "command": "npx @mcp/fs" }\n  },\n  "permissions": { "file.write": "./src" }\n}' },
+  ];
+
+  statusMeta = {
+    installed:{ label:'INSTALLED', glyph:'✓', color:'var(--ok)' },
+    missing:{ label:'MISSING', glyph:'–', color:'var(--text-faint)' },
+    differs:{ label:'DIFFERS', glyph:'≠', color:'var(--warn)' },
+    error:{ label:'ERROR', glyph:'✕', color:'var(--err)' },
+  };
+
+  groups = [
+    { name:'MCP SERVERS', items:[
+      { key:'filesystem', scope:'stdio', cells:{ claude:{s:'installed',v:'npx @mcp/fs'}, codex:{s:'installed',v:'npx @mcp/fs'}, opencode:{s:'installed',v:'npx @mcp/fs'} } },
+      { key:'github', scope:'http', cells:{ claude:{s:'installed',v:'api.github.com'}, codex:{s:'differs',v:'ghe.corp.net'}, opencode:{s:'missing',v:'not set'} } },
+      { key:'postgres', scope:'stdio', cells:{ claude:{s:'installed',v:'pg-mcp'}, codex:{s:'error',v:'auth failed'}, opencode:{s:'missing',v:'not set'} } },
+    ]},
+    { name:'ENVIRONMENT', items:[
+      { key:'ANTHROPIC_API_KEY', scope:'secret', cells:{ claude:{s:'installed',v:'sk-ant-•••4f2'}, codex:{s:'missing',v:'not set'}, opencode:{s:'installed',v:'sk-ant-•••4f2'} } },
+      { key:'OPENAI_API_KEY', scope:'secret', cells:{ claude:{s:'missing',v:'not set'}, codex:{s:'installed',v:'sk-•••9a1'}, opencode:{s:'installed',v:'sk-•••9a1'} } },
+      { key:'DEFAULT_MODEL', scope:'setting', cells:{ claude:{s:'installed',v:'claude-3.7-sonnet'}, codex:{s:'differs',v:'gpt-4o'}, opencode:{s:'differs',v:'llama-3.3-70b'} } },
+    ]},
+    { name:'PERMISSIONS', items:[
+      { key:'file.write', scope:'policy', cells:{ claude:{s:'installed',v:'allow ./**'}, codex:{s:'installed',v:'allow ./**'}, opencode:{s:'differs',v:'allow ./src'} } },
+      { key:'network.fetch', scope:'policy', cells:{ claude:{s:'installed',v:'allow'}, codex:{s:'error',v:'deny+allow conflict'}, opencode:{s:'installed',v:'allow'} } },
+      { key:'shell.exec', scope:'policy', cells:{ claude:{s:'installed',v:'ask'}, codex:{s:'installed',v:'ask'}, opencode:{s:'missing',v:'not set'} } },
+    ]},
+    { name:'HOOKS', items:[
+      { key:'pre-commit', scope:'lifecycle', cells:{ claude:{s:'installed',v:'lint && test'}, codex:{s:'missing',v:'not set'}, opencode:{s:'installed',v:'lint'} } },
+      { key:'format-on-save', scope:'lifecycle', cells:{ claude:{s:'installed',v:'prettier'}, codex:{s:'differs',v:'biome'}, opencode:{s:'installed',v:'prettier'} } },
+    ]},
+  ];
+
+  renderVals() {
+    const theme = this.state.theme ?? this.props.theme ?? 'dark';
+    const dock = this.props.dockPosition ?? 'left';
+    const connectors = this.props.showConnectors ?? true;
+    const spacious = (this.props.density ?? 'compact') === 'comfortable';
+    const dens = spacious
+      ? { cardPad:'20px 22px', cellPad:'18px 20px', bandPad:'13px 20px', gap:'18px' }
+      : { cardPad:'14px 16px', cellPad:'13px 16px', bandPad:'9px 16px', gap:'12px' };
+    const q = (this.state.query || '').trim().toLowerCase();
+    const meta = this.statusMeta;
+    const agents = this.agents;
+
+    // full-matrix counts
+    const counts = {}; agents.forEach(a => counts[a.id] = { installed:0, missing:0, differs:0, error:0 });
+    let differs = 0, errors = 0, itemCount = 0;
+    this.groups.forEach(g => g.items.forEach(it => {
+      itemCount++;
+      const st = agents.map(a => it.cells[a.id].s);
+      st.forEach((s, i) => counts[agents[i].id][s]++);
+      if (st.includes('error')) errors++;
+      if (st.includes('differs')) differs++;
+    }));
+
+    const open = (id) => () => this.setState({ selectedAgent:id, detailTab:'config' });
+
+    // flat rows (filtered)
+    const flatRows = [];
+    this.groups.forEach(g => {
+      const items = g.items.filter(it => !q || it.key.toLowerCase().includes(q) || g.name.toLowerCase().includes(q));
+      if (!items.length) return;
+      flatRows.push({ rid:'b-'+g.name, isBand:true, isItem:false, name:g.name, count:items.length, iconMcp:g.name==='MCP SERVERS', iconEnv:g.name==='ENVIRONMENT', iconPerm:g.name==='PERMISSIONS', iconHook:g.name==='HOOKS' });
+      items.forEach(it => {
+        const cells = agents.map(a => {
+          const c = it.cells[a.id]; const m = meta[c.s];
+          return {
+            agentId:a.id, glyph:m.glyph, label:m.label, value:c.v,
+            wrapStyle:{ padding:dens.cellPad, borderRight:'1px solid var(--border)', borderBottom:'1px solid var(--border)', cursor:'pointer', display:'flex', flexDirection:'column', gap:'6px', minWidth:0 },
+            glyphStyle:{ color:m.color, fontSize:'14px', width:'16px', textAlign:'center' },
+            labelStyle:{ color:m.color, fontSize:'10px', letterSpacing:'0.1em', fontWeight:500 },
+            onClick: open(a.id),
+          };
+        });
+        flatRows.push({ rid:it.key, isBand:false, isItem:true, key:it.key, scope:it.scope, cells });
+      });
+    });
+
+    const agentsView = agents.map(a => ({ ...a, ok:counts[a.id].installed, differs:counts[a.id].differs, error:counts[a.id].error, onClick: open(a.id) }));
+
+    // detail
+    const sid = this.state.selectedAgent;
+    const sel = sid ? agents.find(a => a.id === sid) : null;
+    let detail = null;
+    if (sel) {
+      const cfg = this.groups.map(g => ({
+        name:g.name,
+        items: g.items.map(it => { const c = it.cells[sel.id]; const m = meta[c.s]; return { key:it.key, value:c.v, glyph:m.glyph, glyphStyle:{ color:m.color, fontSize:'14px', width:'16px', textAlign:'center' } }; }),
+      }));
+      const env = this.groups.find(g => g.name === 'ENVIRONMENT').items.map(it => {
+        const c = it.cells[sel.id]; const m = meta[c.s];
+        return { key:it.key, value:c.v, label:m.label, pillStyle:{ color:m.color, fontSize:'10px', letterSpacing:'0.1em', fontWeight:500, border:'1px solid var(--border)', padding:'4px 8px', borderRadius:'2px', whiteSpace:'nowrap' } };
+      });
+      const hooks = this.groups.find(g => g.name === 'HOOKS').items.map(it => {
+        const c = it.cells[sel.id]; const m = meta[c.s];
+        return { key:it.key, value:c.v, glyph:m.glyph, glyphStyle:{ color:m.color, fontSize:'14px', width:'16px', textAlign:'center' } };
+      });
+      detail = { ...sel, ok:counts[sel.id].installed, differs:counts[sel.id].differs, error:counts[sel.id].error, configSections:cfg, envItems:env, hookItems:hooks, launch: sel.id + ' --project .' };
+    }
+
+    // dock
+    const dockBase = { display:'flex', gap:'6px', alignItems:'center', padding:'8px', background:'var(--bg-elev)', border:'1px solid var(--border-strong)', borderRadius:'14px', boxShadow:'0 12px 44px rgba(0,0,0,0.45)', zIndex:50 };
+    const dockStyle = dock === 'left'
+      ? { ...dockBase, flexDirection:'column', position:'fixed', left:'20px', top:'50%', transform:'translateY(-50%)' }
+      : { ...dockBase, flexDirection:'row', position:'fixed', bottom:'20px', left:'50%', transform:'translateX(-50%)' };
+
+    const nav = this.state.activeNav;
+    const navDef = [ ['matrix','MATRIX'], ['agents','AGENTS'], ['secrets','SECRETS'], ['settings','SETTINGS'] ];
+    const navItems = navDef.map(([id, label]) => {
+      const active = nav === id;
+      return {
+        id, label,
+        isMatrix:id==='matrix', isAgents:id==='agents', isSecrets:id==='secrets', isSettings:id==='settings',
+        onClick: () => this.setState({ activeNav:id }),
+        style: { display:'flex', flexDirection:'column', alignItems:'center', gap:'5px', width:'58px', padding:'9px 6px', borderRadius:'9px', cursor:'pointer', border:'none', fontFamily:'inherit', background: active ? 'var(--accent)' : 'transparent', color: active ? 'var(--accent-contrast)' : 'var(--text-dim)' },
+      };
+    });
+
+    const mainBase = { height:'100%', overflow:'auto', position:'relative', zIndex:1, '--nf-card-pad':dens.cardPad, '--nf-cell-pad':dens.cellPad, '--nf-band-pad':dens.bandPad, '--nf-gap':dens.gap };
+    const mainStyle = dock === 'left'
+      ? { ...mainBase, paddingLeft:'104px', paddingRight:'28px', paddingTop:'26px', paddingBottom:'40px' }
+      : { ...mainBase, paddingLeft:'28px', paddingRight:'28px', paddingTop:'26px', paddingBottom:'120px' };
+
+    const tabBase = { background:'transparent', border:'none', borderBottom:'2px solid transparent', padding:'14px 16px 12px', fontFamily:'inherit', fontSize:'11px', letterSpacing:'0.12em', cursor:'pointer', color:'var(--text-dim)' };
+    const tabActive = { ...tabBase, color:'var(--text)', borderBottom:'2px solid var(--accent)' };
+    const dt = this.state.detailTab;
+
+    return {
+      theme, dock, connectors,
+      isDark: theme === 'dark', isLight: theme === 'light',
+      agents: agentsView, flatRows,
+      itemCount, differs, errors, agentCount: agents.length,
+      query: this.state.query,
+      onQuery: (e) => this.setState({ query: e.target.value }),
+      toggleTheme: () => this.setState(s => ({ theme: (s.theme ?? this.props.theme ?? 'dark') === 'dark' ? 'light' : 'dark' })),
+      navItems, dockStyle, mainStyle,
+      selected: detail,
+      isConfigTab: dt === 'config', isEnvTab: dt === 'env', isCmdTab: dt === 'commands',
+      tabConfig: () => this.setState({ detailTab:'config' }),
+      tabEnv: () => this.setState({ detailTab:'env' }),
+      tabCmd: () => this.setState({ detailTab:'commands' }),
+      configTabStyle: dt === 'config' ? tabActive : tabBase,
+      envTabStyle: dt === 'env' ? tabActive : tabBase,
+      cmdTabStyle: dt === 'commands' ? tabActive : tabBase,
+      closePanel: () => this.setState({ selectedAgent:null }),
+    };
+  }
+}
+</script>
+</body>
+</html>

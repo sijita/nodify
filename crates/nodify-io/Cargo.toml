@@ -1,0 +1,9 @@
+[package]
+name = "nodify-io"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+nodify-core = { path = "../nodify-core" }
+serde_json = { workspace = true }
