@@ -70,6 +70,37 @@ impl Adapter for OpenCodeAdapter {
             .map(str::to_string)
     }
 
+    /// Objeto `provider` con `name`, `options.baseURL`, `env` (array de nombres de env var).
+    fn parse_providers(&self, raw: &str) -> Vec<nodify_core::ProviderInfo> {
+        let Ok(Some(root)) = jsonc_parser::parse_to_serde_value(raw, &Default::default()) else {
+            return Vec::new();
+        };
+        let Some(providers) = root.get("provider").and_then(Value::as_object) else {
+            return Vec::new();
+        };
+        let mut out = Vec::new();
+        for (id, v) in providers {
+            let key_env = v
+                .get("env")
+                .and_then(Value::as_array)
+                .and_then(|a| a.first())
+                .and_then(Value::as_str)
+                .map(str::to_string);
+            out.push(nodify_core::ProviderInfo {
+                id: id.clone(),
+                name: v.get("name").and_then(Value::as_str).map(str::to_string),
+                base_url: v
+                    .get("options")
+                    .and_then(|o| o.get("baseURL"))
+                    .and_then(Value::as_str)
+                    .map(str::to_string),
+                key_env,
+            });
+        }
+        out.sort_by(|a, b| a.id.cmp(&b.id));
+        out
+    }
+
     fn set_model(&self, raw: &str, model: &str) -> Result<String, AdapterError> {
         let rendered =
             serde_json::to_string(&Value::String(model.to_string())).map_err(|e| {

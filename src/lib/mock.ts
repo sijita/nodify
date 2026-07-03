@@ -1,5 +1,5 @@
 import type { McpInput } from "./tauri";
-import type { AgentScan, McpView, SecretView } from "./types";
+import type { AgentScan, McpView, ProviderInfo, SecretView } from "./types";
 
 /**
  * Datos de ejemplo para previsualizar la UI **fuera de Tauri** (navegador). Es un
@@ -171,6 +171,30 @@ export function mockWriteRules(agentId: string, content: string): void {
   mockRules[agentId] = content;
   const agent = state.find((a) => a.id === agentId);
   if (agent) agent.config.rulesPresent = content.trim().length > 0;
+}
+
+const mockProviders: Record<string, ProviderInfo[]> = {
+  "claude-code": [],
+  codex: [
+    {
+      id: "openrouter",
+      name: "OpenRouter",
+      baseUrl: "https://openrouter.ai/api/v1",
+      keyEnv: "OPENROUTER_API_KEY",
+    },
+  ],
+  opencode: [
+    {
+      id: "featherless",
+      name: "Featherless",
+      baseUrl: "https://api.featherless.ai/v1",
+      keyEnv: "FEATHERLESS_API_KEY",
+    },
+  ],
+};
+
+export function mockListProviders(agentId: string): ProviderInfo[] {
+  return mockProviders[agentId] ?? [];
 }
 
 /** Bundle canónico de ejemplo (navegador): sin valores de secretos (solo referencias). */

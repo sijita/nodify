@@ -45,3 +45,11 @@ export interface DiffEntry {
   agent: string;
   change: string;
 }
+
+export interface ProviderInfo {
+  id: string;
+  name: string | null;
+  baseUrl: string | null;
+  /** Nombre de la env var de la key (nunca el valor). */
+  keyEnv: string | null;
+}

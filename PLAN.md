@@ -74,9 +74,13 @@ Salida: **modelo canónico v1** (campos de MCP, Skill, Config) + tabla de compat
 - ✅ **Editar reglas** (`CLAUDE.md`/`AGENTS.md`): comandos `read_rules`/`write_rules` + editor en
   el **panel de detalle** (drawer) por agente, con tabs OVERVIEW/RULES.
 
+- ✅ **Leer proveedores**: `parse_providers` por adaptador (Codex `[model_providers.*]`,
+  OpenCode `provider`; Claude vacío) + comando `list_providers` + tab PROVIDERS en el drawer.
+  Muestra id/name/base_url y el **nombre de la env var** de la key (nunca el valor, ADR-0004).
+
 **Pendiente:**
-- Proveedores + **API keys** con vista de **propagación** (P7). Ojo: keys de Codex/OpenCode
-  viven en `auth.json` (intocable) o env vars → diseño de secretos aparte (el más espinoso).
+- **Escribir** valores de API keys / propagación (P7). Requiere gestionar `settings.env` (Claude)
+  y referencias env; nunca `auth.json`. Diseño de secretos por definir.
 - **Hito M3:** "gestiono modelos, API keys y reglas globales desde Nodify".
 
 ## Fase 4 — Skills
