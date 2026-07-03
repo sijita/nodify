@@ -12,8 +12,8 @@ use nodify_core::mcp::Transport;
 use nodify_core::{diff_bundles, Adapter, CanonicalMcp, DiffEntry, SecretValue, SyncBundle};
 use nodify_io::detect::AgentId;
 use nodify_io::{
-    config_path, copy_skill, model_source_path, remove_skill as remove_skill_fs, safe_write,
-    skills_dir,
+    config_path, copy_skill, model_source_path, remove_skill as remove_skill_fs, rules_path,
+    safe_write, skills_dir,
 };
 use serde::Deserialize;
 
@@ -139,6 +139,20 @@ pub fn share_skill(from_id: String, to_id: String, name: String) -> Result<(), S
 pub fn remove_skill(agent_id: String, name: String) -> Result<(), String> {
     let (id, _) = adapter_for(&agent_id)?;
     remove_skill_fs(&skills_dir(id, &current_env()), &name).map_err(|e| e.to_string())
+}
+
+// ---------- Reglas (CLAUDE.md / AGENTS.md) ----------
+
+#[tauri::command]
+pub fn read_rules(agent_id: String) -> Result<String, String> {
+    let (id, _) = adapter_for(&agent_id)?;
+    Ok(std::fs::read_to_string(rules_path(id, &current_env())).unwrap_or_default())
+}
+
+#[tauri::command]
+pub fn write_rules(agent_id: String, content: String) -> Result<(), String> {
+    let (id, _) = adapter_for(&agent_id)?;
+    write_file(&rules_path(id, &current_env()), &content)
 }
 
 // ---------- Sync (Fase 5, ADR-0006) ----------

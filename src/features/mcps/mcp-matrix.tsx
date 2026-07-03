@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { type Status, StatusIndicator } from "@/components/ui/status-indicator";
+import { AgentDrawer } from "@/features/agents/agent-drawer";
 import { agentMeta } from "@/lib/agents";
 import type { AgentScan } from "@/lib/types";
 import { List, Plus, SlidersHorizontal, Sparkles } from "lucide-react";
@@ -28,7 +29,9 @@ export function McpMatrix({ query }: { query: string }) {
   const { agents, error, isLoading } = useAgentScan();
   const actions = useMcpActions();
   const [showAdd, setShowAdd] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const agentIds = agents.map((a) => a.id);
+  const selectedAgent = agents.find((a) => a.id === selectedId) ?? null;
 
   const { rows, skillRows, configRows, stats } = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -122,9 +125,12 @@ export function McpMatrix({ query }: { query: string }) {
             const meta = agentMeta(a.id);
             const ok = a.mcps.length;
             return (
-              <div
+              <button
                 key={a.id}
-                className="border-border border-r border-b bg-elevated p-4 last:border-r-0"
+                type="button"
+                onClick={() => setSelectedId(a.id)}
+                title={`Ver detalle de ${meta.name}`}
+                className="cursor-pointer border-border border-r border-b bg-elevated p-4 text-left last:border-r-0 hover:bg-elevated-2"
               >
                 <div className="flex items-center gap-3">
                   <span className="flex h-[34px] w-[34px] flex-shrink-0 items-center justify-center rounded-[var(--radius-sm)] border border-border-strong bg-surface font-semibold text-xs tracking-[0.04em]">
@@ -144,7 +150,7 @@ export function McpMatrix({ query }: { query: string }) {
                   <span className="text-success">✓ {ok}</span>
                   {a.error && <span className="text-danger">✕ 1</span>}
                 </div>
-              </div>
+              </button>
             );
           })}
 
@@ -357,6 +363,8 @@ export function McpMatrix({ query }: { query: string }) {
           onSubmit={(agentId, mcp) => actions.install(agentId, mcp)}
         />
       )}
+
+      {selectedAgent && <AgentDrawer agent={selectedAgent} onClose={() => setSelectedId(null)} />}
     </div>
   );
 }

@@ -71,10 +71,12 @@ Salida: **modelo canónico v1** (campos de MCP, Skill, Config) + tabla de compat
 - ✅ `set_model` por adaptador (preservando settings) + comando `set_model` + edición inline
   en la banda CONFIG (clic → prompt).
 
+- ✅ **Editar reglas** (`CLAUDE.md`/`AGENTS.md`): comandos `read_rules`/`write_rules` + editor en
+  el **panel de detalle** (drawer) por agente, con tabs OVERVIEW/RULES.
+
 **Pendiente:**
-- Editar reglas (`CLAUDE.md`/`AGENTS.md`) — editor de texto.
 - Proveedores + **API keys** con vista de **propagación** (P7). Ojo: keys de Codex/OpenCode
-  viven en `auth.json` (intocable) o env vars → diseño de secretos aparte.
+  viven en `auth.json` (intocable) o env vars → diseño de secretos aparte (el más espinoso).
 - **Hito M3:** "gestiono modelos, API keys y reglas globales desde Nodify".
 
 ## Fase 4 — Skills

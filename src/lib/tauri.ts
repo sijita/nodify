@@ -2,12 +2,14 @@ import { invoke } from "@tauri-apps/api/core";
 import {
   mockExportBundle,
   mockInstall,
+  mockReadRules,
   mockRemove,
   mockRemoveSkill,
   mockScan,
   mockSetModel,
   mockShare,
   mockShareSkill,
+  mockWriteRules,
 } from "./mock";
 import type { AgentScan, DiffEntry } from "./types";
 
@@ -63,6 +65,18 @@ export function shareSkill(fromId: string, toId: string, name: string): Promise<
 export function removeSkill(agentId: string, name: string): Promise<void> {
   if (!isTauri()) return Promise.resolve(mockRemoveSkill(agentId, name));
   return invoke("remove_skill", { agentId, name });
+}
+
+// ---------- Reglas ----------
+
+export function readRules(agentId: string): Promise<string> {
+  if (!isTauri()) return Promise.resolve(mockReadRules(agentId));
+  return invoke<string>("read_rules", { agentId });
+}
+
+export function writeRules(agentId: string, content: string): Promise<void> {
+  if (!isTauri()) return Promise.resolve(mockWriteRules(agentId, content));
+  return invoke("write_rules", { agentId, content });
 }
 
 // ---------- Sync (Fase 5) ----------
