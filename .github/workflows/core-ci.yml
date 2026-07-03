@@ -1,0 +1,25 @@
+name: core-ci
+
+# CI del core Rust (crates puros, sin GUI). El build de Tauri se añadirá con matriz
+# multiplataforma cuando exista el shell (ver PLAN.md, Fase 1 GUI).
+on:
+  push:
+    paths: ["crates/**", "Cargo.toml", "Cargo.lock", ".github/workflows/core-ci.yml"]
+  pull_request:
+    paths: ["crates/**", "Cargo.toml", "Cargo.lock", ".github/workflows/core-ci.yml"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - name: fmt
+        run: cargo fmt --all -- --check
+      - name: clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: test
+        run: cargo test --workspace

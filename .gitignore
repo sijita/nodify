@@ -1,0 +1,16 @@
+# Rust
+/target
+**/*.rs.bk
+
+# Node / frontend
+node_modules
+dist
+.vite
+
+# Tauri
+src-tauri/target
+src-tauri/gen
+
+# Herramientas / temporales
+.firecrawl
+.DS_Store
