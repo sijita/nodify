@@ -68,11 +68,23 @@ export function removeSkill(agentId: string, name: string): Promise<void> {
   return invoke("remove_skill", { agentId, name });
 }
 
-// ---------- Proveedores ----------
+// ---------- Proveedores / secretos ----------
 
 export function listProviders(agentId: string): Promise<ProviderInfo[]> {
   if (!isTauri()) return Promise.resolve(mockListProviders(agentId));
   return invoke<ProviderInfo[]>("list_providers", { agentId });
+}
+
+/** Fija una env var (valor) donde el agente lo soporte (Claude). Otros → error. */
+export function setEnv(agentId: string, key: string, value: string): Promise<void> {
+  if (!isTauri()) {
+    if (agentId !== "claude-code")
+      return Promise.reject(
+        new Error("solo Claude admite valor en archivo; el resto lee del shell"),
+      );
+    return Promise.resolve();
+  }
+  return invoke("set_env", { agentId, key, value });
 }
 
 // ---------- Reglas ----------

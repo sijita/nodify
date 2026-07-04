@@ -1,4 +1,5 @@
 import { McpMatrix } from "@/features/mcps/mcp-matrix";
+import { SecretsPanel } from "@/features/secrets/secrets-panel";
 import { SyncPanel } from "@/features/sync/sync-panel";
 import { isTauri } from "@/lib/tauri";
 import { useState } from "react";
@@ -33,10 +34,9 @@ export function App() {
           )}
 
           {section === "matrix" && <McpMatrix query={query} />}
+          {section === "secrets" && <SecretsPanel />}
           {section === "sync" && <SyncPanel />}
-          {(section === "agents" || section === "secrets") && (
-            <p className="font-sans text-faint text-sm">Próximamente.</p>
-          )}
+          {section === "agents" && <p className="font-sans text-faint text-sm">Próximamente.</p>}
         </div>
       </main>
     </div>

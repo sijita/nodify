@@ -150,6 +150,17 @@ pub fn list_providers(agent_id: String) -> Result<Vec<nodify_core::ProviderInfo>
     Ok(adapter.parse_providers(&raw))
 }
 
+/// Fija el valor de una env var en el archivo de settings del agente (solo donde se
+/// soporta; Claude `settings.json` `env`). Codex/OpenCode devuelven error explicativo.
+#[tauri::command]
+pub fn set_env(agent_id: String, key: String, value: String) -> Result<(), String> {
+    let (id, adapter) = adapter_for(&agent_id)?;
+    let path = model_source_path(id, &current_env());
+    let raw = std::fs::read_to_string(&path).unwrap_or_default();
+    let out = adapter.set_env(&raw, &key, &value).map_err(|e| e.to_string())?;
+    write_file(&path, &out)
+}
+
 // ---------- Reglas (CLAUDE.md / AGENTS.md) ----------
 
 #[tauri::command]

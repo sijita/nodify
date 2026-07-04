@@ -27,6 +27,7 @@ pub fn run() {
             mutate::read_rules,
             mutate::write_rules,
             mutate::list_providers,
+            mutate::set_env,
             mutate::export_bundle,
             mutate::sync_status,
             mutate::sync_push,
