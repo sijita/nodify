@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { GitMerge, Grid2x2, KeyRound, RefreshCw } from "lucide-react";
+import { Bot, Grid2x2, KeyRound, RefreshCw } from "lucide-react";
 import { create } from "zustand";
 
 export type NavSection = "matrix" | "agents" | "secrets" | "sync";
@@ -15,7 +15,7 @@ export const useNav = create<NavState>((set) => ({
 
 const ITEMS: Array<{ id: NavSection; label: string; icon: typeof Grid2x2 }> = [
   { id: "matrix", label: "MATRIX", icon: Grid2x2 },
-  { id: "agents", label: "ALIGN", icon: GitMerge },
+  { id: "agents", label: "ALIGN", icon: Bot },
   { id: "secrets", label: "SECRETS", icon: KeyRound },
   { id: "sync", label: "SYNC", icon: RefreshCw },
 ];
