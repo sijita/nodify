@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useDialog } from "@/components/ui/dialog";
@@ -122,6 +123,7 @@ export function AgentsPanel() {
     return <p className="text-danger text-sm">{`> error al escanear: ${String(error)}`}</p>;
 
   const pendingCount = plans.reduce((s, p) => s + p.total, 0);
+  const inSync = plans.filter((p) => p.total === 0).length;
 
   return (
     <div className="mx-auto max-w-[1180px]">
@@ -133,84 +135,31 @@ export function AgentsPanel() {
         los demás. Es aditivo: nunca elimina lo que un destino tenga de más.
       </p>
 
-      {/* selector de fuente */}
-      <div className="mb-5 flex flex-wrap items-center gap-2">
-        <span className="text-[10px] tracking-[0.12em] text-muted-foreground">FUENTE</span>
-        {agents.map((a) => (
-          <Button
-            key={a.id}
-            variant={effectiveSourceId === a.id ? "accent" : "outline"}
-            size="sm"
-            onClick={() => setSourceId(a.id)}
-          >
-            {agentMeta(a.id).name}
-          </Button>
-        ))}
-        <div className="ml-auto">
-          <Button
-            variant="accent"
-            size="sm"
-            onClick={alignAll}
-            disabled={!!busy || pendingCount === 0}
-          >
-            <GitMerge size={13} />
-            {busy === "*" ? "alineando…" : `Alinear todos (${pendingCount})`}
-          </Button>
-        </div>
-      </div>
+      {source && (
+        <SourceHero
+          source={source}
+          agents={agents}
+          onPick={setSourceId}
+          pendingCount={pendingCount}
+          inSync={inSync}
+          totalTargets={plans.length}
+          busy={busy}
+          onAlignAll={alignAll}
+        />
+      )}
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {plans.map((plan) => {
-          const meta = agentMeta(plan.target.id);
-          const aligned = plan.total === 0;
-          return (
-            <Card key={plan.target.id} className="flex flex-col gap-4 p-5">
-              <div className="flex items-center gap-3">
-                <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[var(--radius-sm)] border border-border-strong bg-surface font-semibold text-xs tracking-[0.04em]">
-                  {meta.badge}
-                </span>
-                <div className="min-w-0">
-                  <div className="truncate font-semibold text-sm">{meta.name}</div>
-                  <div className="text-faint text-xs">
-                    {plan.target.detected ? "detectado" : "no detectado"}
-                  </div>
-                </div>
-              </div>
-
-              {aligned ? (
-                <p className="text-success text-xs">{"✓ ya alineado con la fuente"}</p>
-              ) : (
-                <ul className="flex flex-col gap-1.5 text-xs">
-                  {plan.mcpsAdd.length > 0 && (
-                    <PlanLine label="+ mcps" items={plan.mcpsAdd} tone="text-success" />
-                  )}
-                  {plan.mcpsUpdate.length > 0 && (
-                    <PlanLine label="~ mcps" items={plan.mcpsUpdate} tone="text-warning" />
-                  )}
-                  {plan.skillsAdd.length > 0 && (
-                    <PlanLine label="+ skills" items={plan.skillsAdd} tone="text-success" />
-                  )}
-                  {plan.modelTo && (
-                    <li className="flex gap-2">
-                      <span className="w-[68px] flex-shrink-0 text-warning">~ modelo</span>
-                      <span className="truncate text-muted-foreground">{plan.modelTo}</span>
-                    </li>
-                  )}
-                </ul>
-              )}
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => align(plan)}
-                disabled={!!busy || aligned}
-                className="mt-auto"
-              >
-                {busy === plan.target.id ? "alineando…" : `Alinear (${plan.total})`}
-              </Button>
-            </Card>
-          );
-        })}
+      <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {source &&
+          plans.map((plan) => (
+            <DiffPanel
+              key={plan.target.id}
+              plan={plan}
+              sourceBadge={agentMeta(source.id).badge}
+              busy={busy === plan.target.id}
+              disabled={!!busy}
+              onAlign={() => align(plan)}
+            />
+          ))}
         {plans.length === 0 && (
           <p className="text-faint text-xs">{"> se necesitan al menos 2 agentes"}</p>
         )}
@@ -221,13 +170,208 @@ export function AgentsPanel() {
   );
 }
 
-function PlanLine({ label, items, tone }: { label: string; items: string[]; tone: string }) {
+/** Panel de fuente: selector + inventario + barra de estado global de sincronía. */
+function SourceHero({
+  source,
+  agents,
+  onPick,
+  pendingCount,
+  inSync,
+  totalTargets,
+  busy,
+  onAlignAll,
+}: {
+  source: AgentScan;
+  agents: AgentScan[];
+  onPick: (id: string) => void;
+  pendingCount: number;
+  inSync: number;
+  totalTargets: number;
+  busy: string | null;
+  onAlignAll: () => void;
+}) {
+  const meta = agentMeta(source.id);
+  const allSynced = pendingCount === 0 && totalTargets > 0;
+  const ratio = totalTargets ? inSync / totalTargets : 1;
+
   return (
-    <li className="flex gap-2">
-      <span className={`w-[68px] flex-shrink-0 ${tone}`}>{label}</span>
-      <span className="truncate text-muted-foreground" title={items.join(", ")}>
-        {items.join(", ")}
+    <Card className="overflow-hidden p-0">
+      {/* barra superior: label + selector de fuente */}
+      <div className="flex flex-wrap items-center gap-2 border-border border-b bg-elevated px-4 py-2.5">
+        <span className="mr-1 flex items-center gap-1.5 text-[10px] tracking-[0.16em] text-faint">
+          <span className="text-muted-foreground">▚</span> FUENTE DE VERDAD
+        </span>
+        {agents.map((a) => {
+          const active = a.id === source.id;
+          return (
+            <button
+              key={a.id}
+              type="button"
+              onClick={() => onPick(a.id)}
+              className={`rounded-[var(--radius-sm)] border px-2.5 py-1 font-mono text-[11px] tracking-[0.06em] transition-colors ${
+                active
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-surface text-muted-foreground hover:border-border-strong hover:text-foreground"
+              }`}
+            >
+              {agentMeta(a.id).badge}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* cuerpo: identidad de la fuente + inventario */}
+      <div className="flex flex-wrap items-center gap-4 px-4 py-4">
+        <Badge variant="avatar" className="h-11 w-11 text-sm">
+          {meta.badge}
+        </Badge>
+        <div className="min-w-0 flex-1">
+          <div className="font-semibold text-[15px]">{meta.name}</div>
+          <div className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 font-mono text-[11px] text-faint">
+            <span>
+              <span className="text-muted-foreground">{source.mcps.length}</span> mcps
+            </span>
+            <span>·</span>
+            <span>
+              <span className="text-muted-foreground">{source.skills.length}</span> skills
+            </span>
+            <span>·</span>
+            <span className="truncate text-muted-foreground">
+              {source.config.model ?? "sin modelo"}
+            </span>
+          </div>
+        </div>
+
+        <Button
+          variant="accent"
+          size="sm"
+          onClick={onAlignAll}
+          disabled={!!busy || pendingCount === 0}
+        >
+          <GitMerge size={13} />
+          {busy === "*" ? "propagando…" : `Alinear todos · ${pendingCount}`}
+        </Button>
+      </div>
+
+      {/* barra de sincronía global */}
+      <div className="flex items-center gap-3 border-border border-t px-4 py-2.5">
+        <div className="h-1 flex-1 overflow-hidden rounded-full bg-elevated-2">
+          <div
+            className={allSynced ? "h-full bg-success" : "h-full bg-primary"}
+            style={{ width: `${Math.round(ratio * 100)}%` }}
+          />
+        </div>
+        <span className="font-mono text-[11px] text-faint">
+          {allSynced ? (
+            <span className="text-success">≡ todos en sync</span>
+          ) : (
+            <>
+              <span className="text-foreground">{inSync}</span>/{totalTargets} en sync ·{" "}
+              <span className="text-warning">{pendingCount} Δ</span>
+            </>
+          )}
+        </span>
+      </div>
+    </Card>
+  );
+}
+
+/** Tarjeta de destino: cabecera con flecha `SRC ──▶ DST` + diff de terminal + acción. */
+function DiffPanel({
+  plan,
+  sourceBadge,
+  busy,
+  disabled,
+  onAlign,
+}: {
+  plan: Plan;
+  sourceBadge: string;
+  busy: boolean;
+  disabled: boolean;
+  onAlign: () => void;
+}) {
+  const meta = agentMeta(plan.target.id);
+  const aligned = plan.total === 0;
+
+  return (
+    <Card className="flex flex-col overflow-hidden p-0">
+      {/* cabecera: SRC ──▶ DST + sello de estado */}
+      <div className="flex items-center justify-between gap-2 border-border border-b bg-elevated px-3.5 py-2.5">
+        <div className="flex items-center gap-2 font-mono text-[11px]">
+          <span className="flex h-6 w-6 items-center justify-center rounded-[var(--radius-sm)] border border-border-strong bg-surface font-semibold text-[10px]">
+            {sourceBadge}
+          </span>
+          <span className="text-faint">──▶</span>
+          <span className="flex h-6 w-6 items-center justify-center rounded-[var(--radius-sm)] border border-border-strong bg-surface font-semibold text-[10px]">
+            {meta.badge}
+          </span>
+          <span className="ml-1 font-semibold font-sans text-[13px]">{meta.name}</span>
+        </div>
+        {aligned ? (
+          <span className="font-mono text-[10px] tracking-[0.1em] text-success">≡ SYNC</span>
+        ) : (
+          <span className="font-mono text-[10px] tracking-[0.1em] text-warning">
+            Δ {plan.total}
+          </span>
+        )}
+      </div>
+
+      {/* cuerpo: diff estilo terminal */}
+      {aligned ? (
+        <div className="flex flex-1 items-center justify-center px-4 py-7 text-center font-mono text-[11px] text-faint">
+          {"// ya coincide con la fuente"}
+        </div>
+      ) : (
+        <div className="flex-1 bg-surface px-3.5 py-3 font-mono text-[12px] leading-[1.7]">
+          {plan.mcpsAdd.map((n) => (
+            <DiffRow key={`+m${n}`} glyph="+" kind="mcp" name={n} tone="text-success" />
+          ))}
+          {plan.mcpsUpdate.map((n) => (
+            <DiffRow key={`~m${n}`} glyph="~" kind="mcp" name={n} tone="text-warning" />
+          ))}
+          {plan.skillsAdd.map((n) => (
+            <DiffRow key={`+s${n}`} glyph="+" kind="skill" name={n} tone="text-success" />
+          ))}
+          {plan.modelTo && (
+            <DiffRow glyph="~" kind="model" name={plan.modelTo} tone="text-warning" />
+          )}
+        </div>
+      )}
+
+      {/* acción */}
+      <div className="border-border border-t p-2.5">
+        <Button
+          variant={aligned ? "ghost" : "outline"}
+          size="sm"
+          onClick={onAlign}
+          disabled={disabled || aligned}
+          className="w-full"
+        >
+          {busy ? "alineando…" : aligned ? "sin cambios" : `Alinear · ${plan.total}`}
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
+function DiffRow({
+  glyph,
+  kind,
+  name,
+  tone,
+}: {
+  glyph: string;
+  kind: string;
+  name: string;
+  tone: string;
+}) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <span className={`w-2 flex-shrink-0 font-semibold ${tone}`}>{glyph}</span>
+      <span className="w-11 flex-shrink-0 text-faint">{kind}</span>
+      <span className="truncate text-muted-foreground" title={name}>
+        {name}
       </span>
-    </li>
+    </div>
   );
 }
