@@ -1,51 +1,325 @@
 # Nodify
 
-Gestor de configuración entre agentes de IA de código (Claude Code, Codex, OpenCode):
-ver, instalar, eliminar, compartir y sincronizar MCPs, Skills y config desde un solo lugar.
+> **Un solo panel para gobernar la configuración de todos tus agentes de IA de código.**
 
-App de escritorio (Tauri + Rust core + React/TS). Ver [PRD.md](PRD.md), [PLAN.md](PLAN.md),
-[CONVENTIONS.md](CONVENTIONS.md) y [docs/](docs/).
+Nodify es una app de escritorio que detecta, lee y edita —de forma segura— la
+configuración de **Claude Code**, **Codex** y **OpenCode** desde un único lugar:
+sus MCPs, sus Skills, su modelo por defecto, sus reglas, sus proveedores y sus
+API keys. Y las **sincroniza entre tus dispositivos** vía un repositorio Git.
 
-## Estructura
+Construida con **Tauri v2** (ventana nativa), un **core en Rust** sin GUI (testeable
+headless) y un **frontend React + TypeScript** con un sistema de diseño monocromo
+retro/hacker.
+
+---
+
+## Tabla de contenidos
+
+- [El problema](#el-problema)
+- [Características clave](#características-clave)
+- [Agentes soportados y compatibilidad](#agentes-soportados-y-compatibilidad)
+- [Garantías de seguridad](#garantías-de-seguridad)
+- [Arquitectura](#arquitectura)
+- [Instalación](#instalación)
+- [Desarrollo](#desarrollo)
+- [Estructura del proyecto](#estructura-del-proyecto)
+- [Sincronización multi-dispositivo](#sincronización-multi-dispositivo)
+- [Preguntas frecuentes](#preguntas-frecuentes)
+- [Roadmap](#roadmap)
+- [Convenciones y contribución](#convenciones-y-contribución)
+- [Licencia](#licencia)
+
+---
+
+## El problema
+
+Cada agente de IA de código guarda su configuración en un formato distinto, en una
+ruta distinta:
+
+| Agente      | Ubicación                        | Formato       |
+| ----------- | -------------------------------- | ------------- |
+| Claude Code | `~/.claude.json`, `~/.claude/`   | JSON          |
+| Codex       | `~/.codex/config.toml`           | TOML          |
+| OpenCode    | `~/.config/opencode/opencode.json(c)` | JSON / JSONC |
+
+Si usas más de uno, mantener el mismo MCP, la misma Skill o el mismo modelo en todos
+es un trabajo manual, propenso a errores y difícil de replicar entre máquinas. Nodify
+resuelve exactamente eso: **lee cada formato nativo, lo traduce a un modelo común, y
+escribe de vuelta preservando lo que no entiende.**
+
+---
+
+## Características clave
+
+### 🔌 MCPs (Model Context Protocol servers)
+- **Matriz de estado**: filas = MCP, columnas = agentes, celda = instalado / ausente / divergente.
+- **Instalar** un MCP en un agente (modal manual: stdio o HTTP, args, env, headers).
+- **Eliminar** un MCP (con confirmación).
+- **Compartir**: copiar un MCP de un agente a otro **traduciendo el formato** automáticamente
+  (p. ej. `command` string ↔ array, `env` ↔ `environment`, `Authorization` header ↔ `bearer_token_env_var`).
+
+### 🧩 Skills
+- Descubrimiento de Skills (`SKILL.md` con frontmatter) en los directorios de cada agente.
+- **Compartir** una Skill (copia recursiva de la carpeta) y **eliminar**.
+
+### ⚙️ Config por agente
+- **Modelo por defecto**: leer y editar, con detección de divergencia entre agentes.
+- **Reglas** (`CLAUDE.md` / `AGENTS.md`): editor integrado en el panel de detalle.
+- **Proveedores**: leer id / nombre / `base_url` y el **nombre de la env var** de la key
+  (nunca el valor).
+
+### 🔑 API keys / Secretos
+- Vista **SECRETS** que agrega todos los nombres de env var referenciados (por MCPs y proveedores)
+  y muestra qué agentes usan cada uno.
+- **Set-y-propagar**: escribe el valor donde el agente lo soporta (Claude, en `settings.json → env`).
+  Codex/OpenCode leen del shell o `auth.json`, que Nodify **nunca toca**.
+- Nodify **no almacena** valores de secretos (ver [ADR-0004](docs/adr/0004-secrets-passthrough-masked.md)).
+
+### 🔄 Sincronización multi-dispositivo
+- Exporta un **bundle canónico** (con los secretos convertidos a referencias de env var, nunca valores).
+- `push` / `pull` sobre un repositorio Git para replicar tu configuración entre máquinas.
+- Vista de **diff** previo (`+` añadido, `-` eliminado, `~` cambiado) antes de aplicar.
+
+---
+
+## Agentes soportados y compatibilidad
+
+No todos los agentes soportan los mismos campos. Nodify traduce lo que se puede y
+preserva lo que no entiende. Resumen (detalle en [docs/canonical-model.md](docs/canonical-model.md)):
+
+| Capacidad                 | Claude Code | Codex | OpenCode |
+| ------------------------- | :---------: | :---: | :------: |
+| MCPs stdio                | ✓           | ✓     | ✓        |
+| MCPs HTTP/SSE             | ✓           | ✓\*   | ✓        |
+| Modelo por defecto        | ✓           | ✓     | ✓        |
+| Reglas (memoria)          | ✓ `CLAUDE.md` | ✓ `AGENTS.md` | ✓ `AGENTS.md` |
+| Proveedores (lectura)     | —           | ✓     | ✓        |
+| Escribir valor de API key | ✓ `settings.env` | shell/`auth.json` | shell/`auth.json` |
+| Skills                    | ✓           | ✓     | ✓        |
+
+\* Sujeto a la versión/soporte del agente; ver [docs/adapters/](docs/adapters/).
+
+---
+
+## Garantías de seguridad
+
+Nodify escribe en archivos que tú no creaste. Estas son las reglas que lo hacen seguro,
+codificadas como ADRs:
+
+- **Editor in-place, sin fuente de verdad propia** ([ADR-0002](docs/adr/0002-editor-in-place-no-source-of-truth.md)):
+  los archivos nativos de cada agente son la única fuente de verdad. Nodify no tiene una
+  base de datos paralela que pueda desincronizarse.
+- **Escrituras quirúrgicas** ([ADR-0005](docs/adr/0005-surgical-writes-preserve-unknown.md)):
+  toda escritura **preserva campos desconocidos, orden y comentarios**, hace **backup** y
+  usa **reemplazo atómico** (escribe a temporal + `rename`). Claude usa `serde_json` con
+  `preserve_order`; Codex usa `toml_edit` (conserva comentarios); OpenCode hace *splice*
+  de texto sobre el bloque `mcp` para no perder los comentarios JSONC.
+- **Secretos en passthrough, enmascarados** ([ADR-0004](docs/adr/0004-secrets-passthrough-masked.md)):
+  los valores se envían al webview **ya enmascarados**; Nodify no los guarda; el bundle de
+  sync los reduce a referencias de env var. `auth.json` nunca se lee ni se escribe.
+- **Core sin GUI** para poder testear la lógica de dominio de forma exhaustiva y headless.
+
+---
+
+## Arquitectura
+
+### Modelo canónico + adaptadores
+
+El corazón de Nodify ([ADR-0003](docs/adr/0003-canonical-model-with-adapters.md)) es un
+**modelo canónico** neutral (`CanonicalMcp`, `CanonicalSkill`, `SecretValue`, `Transport`…)
+y un trait `Adapter` que cada agente implementa para traducir **nativo ↔ canónico**:
 
 ```
-crates/            # core Rust (workspace, sin GUI, testeable headless)
-  nodify-core/     # modelo canónico + trait Adapter
-  nodify-adapters/ # parse nativo→canónico (claude/codex/opencode)
-  nodify-io/        # detección de rutas de config
-src-tauri/         # shell Tauri (comandos que exponen el core)
-src/               # frontend React (screaming architecture por feature)
-docs/              # adapters, canonical-model, ADRs, design-system
+                     ┌──────────────────────────────┐
+   archivo nativo    │        trait Adapter         │    modelo canónico
+  (JSON/TOML/JSONC)  │  parse_mcps / upsert_mcp     │   (neutral, común)
+        ───────────▶ │  parse_model / set_model     │ ───────────▶  UI / Sync
+        ◀─────────── │  parse_providers / set_env   │  ◀───────────
+   (escritura        │  remove_mcp                  │
+    quirúrgica)      └──────────────────────────────┘
+                       claude.rs · codex.rs · opencode.rs
 ```
+
+Añadir un agente nuevo = escribir **un** adaptador; nada más cambia.
+
+### Crates de Rust (workspace, sin GUI)
+
+```
+crates/
+  nodify-core/      # dominio puro: modelo canónico + trait Adapter + sync bundle
+  nodify-adapters/  # una implementación de Adapter por agente + ops (share/find)
+  nodify-io/        # detección de rutas, escritura segura (backup+atómico), scan de skills
+```
+
+> `src-tauri/` se **excluye a propósito** del workspace Cargo. Depende de webkit/GUI, y
+> excluirlo permite que `cargo test --workspace` corra el core completo en CI/headless sin
+> arrastrar dependencias gráficas. La shell consume los crates por *path*.
+
+### Flujo completo
+
+```
+  React (features/)  ──invoke──▶  Comandos Tauri (src-tauri/src/mutate.rs)
+        ▲                              │
+        │ SWR                          ▼
+        │                        nodify-adapters ──▶ nodify-core (canónico)
+        └──── AgentScan JSON ◀──  nodify-io (detecta rutas, safe_write)
+```
+
+- **Frontend**: React 19 + Vite 6 + Tailwind v4 + componentes shadcn-style (CVA) + SWR
+  (fetching/caché) + Zustand (navegación) + Biome (lint/format).
+- **Fuera de Tauri** (preview en navegador) hay un **mock mutable**: todas las acciones
+  (instalar, eliminar, compartir, modelo, skills, reglas, export) funcionan sobre datos demo,
+  para poder ver la UI sin backend.
+
+### Decisiones de arquitectura (ADRs)
+
+| ADR | Decisión |
+| --- | --- |
+| [0001](docs/adr/0001-desktop-app-tauri.md) | App de escritorio con Tauri |
+| [0002](docs/adr/0002-editor-in-place-no-source-of-truth.md) | Editor in-place, sin fuente de verdad propia |
+| [0003](docs/adr/0003-canonical-model-with-adapters.md) | Modelo canónico + adaptadores |
+| [0004](docs/adr/0004-secrets-passthrough-masked.md) | Secretos passthrough enmascarados |
+| [0005](docs/adr/0005-surgical-writes-preserve-unknown.md) | Escrituras quirúrgicas (preservar lo desconocido) |
+| [0006](docs/adr/0006-github-sync-canonical-bundle.md) | Sync por bundle canónico en GitHub |
+| [0007](docs/adr/0007-canonical-mcp-translation-rules.md) | Reglas de traducción de MCP entre agentes |
+
+---
+
+## Instalación
+
+### Requisitos
+
+- **Rust** (stable) — [rustup.rs](https://rustup.rs)
+- **Node 20+** y npm
+- **Prerequisitos de Tauri** del SO — ver [tauri.app/start/prerequisites](https://tauri.app/start/prerequisites/).
+  En Linux se necesita **`webkit2gtk-4.1`** (Tauri v2). ⚠️ **Ubuntu 20.04 solo trae `webkit2gtk-4.0`**,
+  por lo que la ventana nativa no compila ahí; usa Ubuntu 22.04+, macOS o Windows para la app nativa.
+  (El core Rust y el preview del frontend sí corren en cualquier sitio.)
+
+### Compilar la app nativa
+
+```bash
+git clone https://github.com/sijita/nodify.git
+cd nodify
+npm install
+
+# Genera los iconos una única vez (requerido por Tauri):
+npx tauri icon path/al/logo.png     # crea src-tauri/icons/
+
+npm run tauri dev     # desarrollo (hot-reload)
+npm run tauri build   # binario/instalador de producción
+```
+
+---
 
 ## Desarrollo
 
-Requisitos: Rust (stable), Node 20+, y los [prerequisitos de Tauri](https://tauri.app/start/prerequisites/)
-del SO (en Linux: `webkit2gtk-4.1`, etc.).
-
 ```bash
-# Core Rust (no necesita GUI):
-cargo test --workspace
+# ── Core Rust (no requiere GUI) ──
+cargo test --workspace                              # ~44 tests de dominio
 cargo clippy --workspace --all-targets -- -D warnings
-cargo run -p nodify-adapters --example scan   # escanea tus agentes reales (solo lectura)
+cargo run -p nodify-adapters --example scan         # escanea TUS agentes reales (solo lectura)
 
-# Frontend:
+# ── Frontend ──
 npm install
-npm run dev        # Vite en :1420
+npm run dev        # Vite en http://localhost:1420 (preview con datos DEMO mutables)
 npm run build      # tsc + vite build
-npm run lint       # biome
+npm run lint       # biome check
+npm run format     # biome format --write
 
-# App completa (Tauri):
-npx tauri icon path/al/logo.png   # ⚠️ genera src-tauri/icons/ (requerido una vez)
+# ── App completa (Tauri) ──
 npm run tauri dev
 ```
 
-## Estado
+> **Tip:** `cargo run -p nodify-adapters --example scan` es la forma más rápida de comprobar,
+> sin riesgo, que Nodify detecta y parsea correctamente la config real de tus agentes (solo lee).
 
-- ✅ **Fase 0** — specs de adaptadores + modelo canónico ([docs/canonical-model.md](docs/canonical-model.md)).
-- 🔵 **Fase 1 (solo lectura)** — core Rust hecho y testeado (13 tests, clippy limpio, validado
-  contra configs reales); shell Tauri + matriz React scaffolded (pendiente de compilar en una
-  máquina con GUI). Ver [PLAN.md](PLAN.md).
+---
 
-> Nota: `src-tauri` se excluye a propósito del workspace Cargo del core para que
-> `cargo test --workspace` no arrastre dependencias de GUI.
+## Estructura del proyecto
+
+```
+nodify/
+├── crates/                     # core Rust (workspace headless, testeable)
+│   ├── nodify-core/            #   modelo canónico, trait Adapter, sync bundle
+│   ├── nodify-adapters/        #   claude.rs · codex.rs · opencode.rs · ops.rs
+│   └── nodify-io/              #   detect.rs (rutas) · write.rs (safe_write) · skills.rs
+├── src-tauri/                  # shell Tauri: comandos que exponen el core (mutate.rs, scan.rs)
+├── src/                        # frontend React (screaming architecture por feature)
+│   ├── app/                    #   layout, dock-nav, grid-background, top-bar, theme
+│   ├── components/ui/          #   button, card, input, badge, status-indicator (CVA)
+│   ├── features/               #   mcps/ · agents/ · secrets/ · sync/
+│   └── lib/                    #   tauri.ts (wrappers) · mock.ts · types.ts · agents.ts
+├── docs/                       # canonical-model, adapters/, adr/, design-system
+├── CONTEXT.md · PRD.md · PLAN.md · CONVENTIONS.md
+└── Cargo.toml · package.json · vite.config.ts · biome.json
+```
+
+---
+
+## Sincronización multi-dispositivo
+
+Nodify puede replicar tu configuración entre máquinas a través de un repo Git
+([ADR-0006](docs/adr/0006-github-sync-canonical-bundle.md)):
+
+1. **Export**: genera un *bundle canónico* con MCPs, modelos y skills de todos los agentes.
+   Los secretos se reducen a **referencias de env var** — nunca se escriben valores en el bundle.
+2. **Push**: escribe el bundle al repo y hace `git add/commit/push`.
+3. **Pull**: `git pull --ff-only` y **aplica** el bundle a los agentes locales (escritura quirúrgica).
+4. **Diff**: antes de aplicar, ves qué cambia (`+` / `-` / `~`).
+
+En el preview de navegador el bundle se puede exportar (demo); `push`/`pull` requieren la app
+nativa + `git` instalado.
+
+---
+
+## Preguntas frecuentes
+
+**¿Nodify puede corromper mis configs?**
+Toda escritura hace backup previo, es atómica (temporal + `rename`) y preserva campos y
+comentarios que no reconoce. La lógica está cubierta por tests que incluyen round-trips.
+
+**¿Guarda mis API keys?**
+No. Los valores viajan enmascarados a la UI y solo se escriben en el archivo del agente que
+los soporta (Claude `settings.env`). No hay almacén ni bóveda; `auth.json` nunca se toca.
+
+**¿Por qué no corre la ventana nativa en mi Ubuntu 20.04?**
+Tauri v2 requiere `webkit2gtk-4.1` y Ubuntu 20.04 solo provee `4.0`. Usa 22.04+, macOS o
+Windows. El core y el preview del frontend funcionan igual en cualquier SO.
+
+**¿Cómo agrego soporte para otro agente (Cursor, Gemini CLI…)?**
+Implementa el trait `Adapter` en un archivo nuevo dentro de `nodify-adapters` y regístralo en
+`all()`. El resto del sistema (UI, sync, escritura segura) lo consume sin cambios.
+
+**¿Necesito los tres agentes instalados?**
+No. Nodify detecta los que tengas presentes y muestra el resto como ausentes.
+
+---
+
+## Roadmap
+
+Completado (MVP, fases 0–5): lectura + escritura de MCPs, Skills, modelo, reglas, proveedores,
+API keys y sync por Git. Ver [PLAN.md](PLAN.md).
+
+Post-MVP (backlog):
+
+- Catálogo/registry curado de MCPs.
+- Enable/disable de Skills por el mecanismo nativo de cada agente.
+- Bóveda cifrada de secretos (keychain del SO).
+- Estado declarativo + detección de *drift* + historial/rollback.
+- Scope de proyecto (`.claude/` local, reglas por proyecto).
+- Más agentes: Cursor, Gemini CLI, Cline…
+
+---
+
+## Convenciones y contribución
+
+- **Arquitectura Screaming** (carpetas por feature), **TDD** en el core, **Conventional Commits**.
+- Antes de un PR: `cargo test --workspace`, `cargo clippy … -D warnings`, `npm run lint`, `npm run build`.
+- Detalles completos en [CONVENTIONS.md](CONVENTIONS.md).
+
+---
+
+## Licencia
+
+MIT.
