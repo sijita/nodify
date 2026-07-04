@@ -82,6 +82,20 @@ impl Adapter for ClaudeAdapter {
     fn parse_providers(&self, _raw: &str) -> Vec<nodify_core::ProviderInfo> {
         Vec::new()
     }
+
+    /// Escribe en el bloque `env` de `settings.json` (Claude lo inyecta a la sesión).
+    fn set_env(&self, raw: &str, key: &str, value: &str) -> Result<String, AdapterError> {
+        let mut root = parse_root(raw)?;
+        let obj = root
+            .as_object_mut()
+            .ok_or_else(|| invalid(key, "settings.json no es un objeto"))?;
+        let env = obj.entry("env").or_insert_with(|| Value::Object(Map::new()));
+        let emap = env
+            .as_object_mut()
+            .ok_or_else(|| invalid(key, "'env' no es un objeto"))?;
+        emap.insert(key.to_string(), Value::String(value.to_string()));
+        serialize(&root)
+    }
 }
 
 fn parse_root(raw: &str) -> Result<Value, AdapterError> {

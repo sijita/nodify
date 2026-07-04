@@ -50,4 +50,9 @@ pub trait Adapter {
     /// Lee los proveedores definidos en la config (sin valores de secretos, solo el
     /// nombre de la env var de la key). Vacío si el agente no los declara en archivo.
     fn parse_providers(&self, raw: &str) -> Vec<ProviderInfo>;
+
+    /// Fija el valor de una variable de entorno en el archivo de settings del agente,
+    /// **solo si el agente tiene un mecanismo en archivo** (Claude: bloque `env`).
+    /// Devuelve `Err` si el agente no lo soporta (Codex/OpenCode leen del shell/`auth.json`).
+    fn set_env(&self, raw: &str, key: &str, value: &str) -> Result<String, AdapterError>;
 }

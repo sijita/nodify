@@ -78,10 +78,13 @@ Salida: **modelo canónico v1** (campos de MCP, Skill, Config) + tabla de compat
   OpenCode `provider`; Claude vacío) + comando `list_providers` + tab PROVIDERS en el drawer.
   Muestra id/name/base_url y el **nombre de la env var** de la key (nunca el valor, ADR-0004).
 
-**Pendiente:**
-- **Escribir** valores de API keys / propagación (P7). Requiere gestionar `settings.env` (Claude)
-  y referencias env; nunca `auth.json`. Diseño de secretos por definir.
-- **Hito M3:** "gestiono modelos, API keys y reglas globales desde Nodify".
+- ✅ **Escribir keys / propagación (P7)**: `Adapter::set_env` (Claude escribe `settings.json`
+  bloque `env`; Codex/OpenCode devuelven error honesto → leen del shell/`auth.json`). Comando
+  `set_env` + **vista SECRETS** (compact) que agrega los nombres de env var referenciados
+  (MCPs + proveedores) y permite set-y-propagar el valor a Claude. Sin almacén propio (ADR-0004).
+
+**Hito M3 alcanzado.** Pendiente menor: enable/disable nativo de skills; escribir el valor en
+Codex/OpenCode requeriría tocar el shell o `auth.json` (fuera de alcance por diseño).
 
 ## Fase 4 — Skills
 

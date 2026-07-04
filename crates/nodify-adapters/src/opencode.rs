@@ -101,6 +101,15 @@ impl Adapter for OpenCodeAdapter {
         out
     }
 
+    /// OpenCode toma las env vars del shell / `auth.json`; en config solo hay refs `{env:KEY}`.
+    fn set_env(&self, _raw: &str, key: &str, _value: &str) -> Result<String, AdapterError> {
+        Err(AdapterError::InvalidMcp {
+            agent: ID,
+            name: key.to_string(),
+            reason: "OpenCode lee las env vars del shell o auth.json; defínela ahí".into(),
+        })
+    }
+
     fn set_model(&self, raw: &str, model: &str) -> Result<String, AdapterError> {
         let rendered =
             serde_json::to_string(&Value::String(model.to_string())).map_err(|e| {

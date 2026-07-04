@@ -49,3 +49,18 @@ fn set_model_roundtrips_and_preserves_each_format() {
     assert!(oc.contains("\"theme\""));
     assert_eq!(OpenCodeAdapter.parse_model(&oc).as_deref(), Some("anthropic/x"));
 }
+
+#[test]
+fn set_env_writes_claude_env_block_others_unsupported() {
+    let out = ClaudeAdapter
+        .set_env(r#"{ "model": "x" }"#, "ANTHROPIC_API_KEY", "sk-demo")
+        .unwrap();
+    assert!(out.contains("\"env\""));
+    assert!(out.contains("ANTHROPIC_API_KEY"));
+    assert!(out.contains("sk-demo"));
+    assert!(out.contains("\"model\"")); // preserva lo demás
+
+    // Codex y OpenCode no soportan escribir el valor en archivo
+    assert!(CodexAdapter.set_env("", "K", "v").is_err());
+    assert!(OpenCodeAdapter.set_env("", "K", "v").is_err());
+}

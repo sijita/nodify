@@ -114,6 +114,15 @@ impl Adapter for CodexAdapter {
         out.sort_by(|a, b| a.id.cmp(&b.id));
         out
     }
+
+    /// Codex toma las env vars del shell / `auth.json`, no de `config.toml`.
+    fn set_env(&self, _raw: &str, key: &str, _value: &str) -> Result<String, AdapterError> {
+        Err(AdapterError::InvalidMcp {
+            agent: ID,
+            name: key.to_string(),
+            reason: "Codex lee las env vars del shell o auth.json; defínela ahí".into(),
+        })
+    }
 }
 
 fn parse_doc(raw: &str) -> Result<DocumentMut, AdapterError> {
