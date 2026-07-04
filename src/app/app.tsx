@@ -17,7 +17,8 @@ export function App() {
 
   const onScan = async () => {
     setScanning(true);
-    await mutate("scan-agents");
+    // Mínimo visible del spinner: el scan (sobre todo el mock) resuelve casi al instante.
+    await Promise.all([mutate("scan-agents"), new Promise((r) => setTimeout(r, 650))]);
     setScanning(false);
   };
 

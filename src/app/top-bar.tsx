@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Moon, RefreshCw, Search, Sun } from "lucide-react";
+import { motion } from "motion/react";
 import { useTheme } from "./theme-store";
 
 interface Props {
@@ -34,10 +35,22 @@ export function TopBar({ query, onQuery, onScan, scanning }: Props) {
           {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
         </Button>
 
-        <Button variant="accent" onClick={onScan} disabled={scanning}>
-          <RefreshCw size={14} className={scanning ? "animate-spin" : undefined} />
-          SCAN
-        </Button>
+        <motion.div className="inline-flex" whileTap={{ scale: 0.94 }}>
+          <Button variant="accent" onClick={onScan} disabled={scanning} className="group">
+            <motion.span
+              className="inline-flex"
+              animate={scanning ? { rotate: -360 } : { rotate: 0 }}
+              transition={
+                scanning
+                  ? { repeat: Number.POSITIVE_INFINITY, ease: "linear", duration: 0.7 }
+                  : { type: "spring", stiffness: 300, damping: 18 }
+              }
+            >
+              <RefreshCw size={14} />
+            </motion.span>
+            {scanning ? "SCANNING" : "SCAN"}
+          </Button>
+        </motion.div>
       </div>
     </div>
   );
