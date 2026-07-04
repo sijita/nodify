@@ -6,7 +6,8 @@ import { AgentDrawer } from "@/features/agents/agent-drawer";
 import { agentMeta } from "@/lib/agents";
 import type { AgentScan } from "@/lib/types";
 import { List, Plus, SlidersHorizontal, Sparkles } from "lucide-react";
-import { useMemo, useState } from "react";
+import { motion } from "motion/react";
+import { type ReactNode, useMemo, useState } from "react";
 import { AddMcpDialog } from "./add-mcp-dialog";
 import { StatCards } from "./stat-cards";
 import { useMcpActions } from "./use-mcp-actions";
@@ -15,6 +16,33 @@ import { useAgentScan } from "./use-mcps";
 interface Cell {
   status: Status;
   value: string;
+}
+
+/**
+ * Contenido animado de una celda. Al cambiar `status`/`changeKey` (instalar, eliminar,
+ * compartir) se re-monta y hace un "pop" con spring, para que la mutación sea visible.
+ */
+function CellBody({
+  status,
+  changeKey,
+  children,
+}: {
+  status: Status;
+  changeKey: string;
+  children: ReactNode;
+}) {
+  return (
+    <motion.div
+      key={`${status}:${changeKey}`}
+      className="flex flex-col gap-1.5"
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ type: "spring", stiffness: 520, damping: 22 }}
+    >
+      <StatusIndicator status={status} />
+      {children}
+    </motion.div>
+  );
 }
 
 /** Estado de un MCP en un agente, comparando su `target` con el resto de agentes. */
@@ -231,10 +259,11 @@ export function McpMatrix({ query }: { query: string }) {
                       actionable ? "cursor-pointer hover:bg-elevated-2" : ""
                     }`}
                   >
-                    <StatusIndicator status={cell.status} />
-                    <div className="truncate text-muted-foreground text-xs">
-                      {source ? "+ compartir aquí" : cell.value}
-                    </div>
+                    <CellBody status={cell.status} changeKey={source ? "share" : cell.value}>
+                      <div className="truncate text-muted-foreground text-xs">
+                        {source ? "+ compartir aquí" : cell.value}
+                      </div>
+                    </CellBody>
                   </Tag>
                 );
               })}
@@ -299,10 +328,11 @@ export function McpMatrix({ query }: { query: string }) {
                       actionable ? "cursor-pointer hover:bg-elevated-2" : ""
                     }`}
                   >
-                    <StatusIndicator status={cell.status} />
-                    <div className="truncate text-muted-foreground text-xs">
-                      {source ? "+ compartir aquí" : cell.value}
-                    </div>
+                    <CellBody status={cell.status} changeKey={source ? "share" : cell.value}>
+                      <div className="truncate text-muted-foreground text-xs">
+                        {source ? "+ compartir aquí" : cell.value}
+                      </div>
+                    </CellBody>
                   </Tag>
                 );
               })}
@@ -351,8 +381,9 @@ export function McpMatrix({ query }: { query: string }) {
                       editable ? "cursor-pointer hover:bg-elevated-2" : ""
                     }`}
                   >
-                    <StatusIndicator status={cell.status} />
-                    <div className="truncate text-muted-foreground text-xs">{cell.value}</div>
+                    <CellBody status={cell.status} changeKey={cell.value}>
+                      <div className="truncate text-muted-foreground text-xs">{cell.value}</div>
+                    </CellBody>
                   </Tag>
                 );
               })}

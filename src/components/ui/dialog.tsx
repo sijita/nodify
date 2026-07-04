@@ -100,17 +100,17 @@ export function DialogProvider({ children }: { children: ReactNode }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.14, ease: "easeOut" }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
             onMouseDown={(e) => {
               if (e.target === e.currentTarget) close(pending.kind === "confirm" ? false : null);
             }}
           >
             <motion.div
               className="w-full max-w-md"
-              initial={{ opacity: 0, scale: 0.97, y: 4 }}
+              initial={{ opacity: 0, scale: 0.92, y: 12 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.98, y: 2 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
+              exit={{ opacity: 0, scale: 0.96, y: 6 }}
+              transition={{ type: "spring", stiffness: 420, damping: 30 }}
             >
               <Card className="p-5">
                 <div className="mb-3 flex items-start justify-between gap-4">
