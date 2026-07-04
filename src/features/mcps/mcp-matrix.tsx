@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useDialog } from "@/components/ui/dialog";
 import { type Status, StatusIndicator } from "@/components/ui/status-indicator";
 import { AgentDrawer } from "@/features/agents/agent-drawer";
 import { agentMeta } from "@/lib/agents";
@@ -28,6 +29,7 @@ function cellFor(agent: AgentScan, name: string, targetsByAgent: Map<string, str
 export function McpMatrix({ query }: { query: string }) {
   const { agents, error, isLoading } = useAgentScan();
   const actions = useMcpActions();
+  const dialog = useDialog();
   const [showAdd, setShowAdd] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const agentIds = agents.map((a) => a.id);
@@ -197,11 +199,15 @@ export function McpMatrix({ query }: { query: string }) {
                     );
                 const actionable = installed || !!source;
 
-                const onClick = () => {
+                const onClick = async () => {
                   if (installed) {
-                    if (confirm(`¿Eliminar "${row.name}" de ${meta.name}?`)) {
-                      actions.remove(agent.id, row.name);
-                    }
+                    const ok = await dialog.confirm({
+                      title: "Eliminar MCP",
+                      message: `¿Eliminar "${row.name}" de ${meta.name}?`,
+                      confirmLabel: "Eliminar",
+                      danger: true,
+                    });
+                    if (ok) actions.remove(agent.id, row.name);
                   } else if (source) {
                     actions.share(source.id, agent.id, row.name);
                   }
@@ -261,11 +267,15 @@ export function McpMatrix({ query }: { query: string }) {
                     );
                 const actionable = installed || !!source;
 
-                const onClick = () => {
+                const onClick = async () => {
                   if (installed) {
-                    if (confirm(`¿Eliminar skill "${row.name}" de ${meta.name}?`)) {
-                      actions.removeSkill(agent.id, row.name);
-                    }
+                    const ok = await dialog.confirm({
+                      title: "Eliminar skill",
+                      message: `¿Eliminar skill "${row.name}" de ${meta.name}?`,
+                      confirmLabel: "Eliminar",
+                      danger: true,
+                    });
+                    if (ok) actions.removeSkill(agent.id, row.name);
                   } else if (source) {
                     actions.shareSkill(source.id, agent.id, row.name);
                   }
@@ -318,12 +328,14 @@ export function McpMatrix({ query }: { query: string }) {
                 const agent = agents[i];
                 const editable = row.name === "default model";
 
-                const onClick = () => {
+                const onClick = async () => {
                   const current = cell.value === "not set" ? "" : cell.value;
-                  const next = prompt(
-                    `Modelo por defecto de ${agentMeta(agent.id).name}:`,
-                    current,
-                  );
+                  const next = await dialog.prompt({
+                    title: "Modelo por defecto",
+                    message: `Modelo por defecto de ${agentMeta(agent.id).name}:`,
+                    defaultValue: current,
+                    placeholder: "p.ej. claude-opus-4-8",
+                  });
                   if (next?.trim()) actions.setModel(agent.id, next.trim());
                 };
                 const Tag = editable ? "button" : "div";
