@@ -331,9 +331,9 @@ function DiffPanel({
   return (
     <motion.div
       className="h-full"
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05, duration: 0.22, ease: "easeOut" }}
+      initial={{ opacity: 0, y: 18, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ delay: index * 0.09, duration: 0.34, ease: [0.16, 1, 0.3, 1] }}
     >
       <Card className="flex h-full flex-col overflow-hidden p-0">
         {/* cabecera: SRC ──▶ DST + sello de estado */}
@@ -378,7 +378,7 @@ function DiffPanel({
         ) : (
           <div className="flex-1 bg-surface px-3.5 py-3 font-mono text-[12px] leading-[1.7]">
             {rows.map((r, ri) => (
-              <DiffRow key={r.key} row={r} delay={index * 0.05 + 0.12 + ri * 0.03} />
+              <DiffRow key={r.key} row={r} delay={index * 0.09 + 0.2 + ri * 0.06} />
             ))}
           </div>
         )}
@@ -404,9 +404,9 @@ function DiffRow({ row, delay }: { row: Row; delay: number }) {
   return (
     <motion.div
       className="flex items-center gap-2.5"
-      initial={{ opacity: 0, x: -4 }}
+      initial={{ opacity: 0, x: -8 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ delay, duration: 0.18, ease: "easeOut" }}
+      transition={{ delay, duration: 0.22, ease: "easeOut" }}
     >
       <span className={`w-2 flex-shrink-0 font-semibold ${row.tone}`}>{row.glyph}</span>
       <span className="w-11 flex-shrink-0 text-faint">{row.kind}</span>
