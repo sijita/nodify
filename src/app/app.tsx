@@ -1,3 +1,4 @@
+import { AgentsPanel } from "@/features/agents/agents-panel";
 import { McpMatrix } from "@/features/mcps/mcp-matrix";
 import { SecretsPanel } from "@/features/secrets/secrets-panel";
 import { SyncPanel } from "@/features/sync/sync-panel";
@@ -34,9 +35,9 @@ export function App() {
           )}
 
           {section === "matrix" && <McpMatrix query={query} />}
+          {section === "agents" && <AgentsPanel />}
           {section === "secrets" && <SecretsPanel />}
           {section === "sync" && <SyncPanel />}
-          {section === "agents" && <p className="font-sans text-faint text-sm">Próximamente.</p>}
         </div>
       </main>
     </div>
