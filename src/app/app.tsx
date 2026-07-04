@@ -3,6 +3,7 @@ import { McpMatrix } from "@/features/mcps/mcp-matrix";
 import { SecretsPanel } from "@/features/secrets/secrets-panel";
 import { SyncPanel } from "@/features/sync/sync-panel";
 import { isTauri } from "@/lib/tauri";
+import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { mutate } from "swr";
 import { DockNav, useNav } from "./dock-nav";
@@ -34,10 +35,20 @@ export function App() {
             </div>
           )}
 
-          {section === "matrix" && <McpMatrix query={query} />}
-          {section === "agents" && <AgentsPanel />}
-          {section === "secrets" && <SecretsPanel />}
-          {section === "sync" && <SyncPanel />}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={section}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.16, ease: "easeOut" }}
+            >
+              {section === "matrix" && <McpMatrix query={query} />}
+              {section === "agents" && <AgentsPanel />}
+              {section === "secrets" && <SecretsPanel />}
+              {section === "sync" && <SyncPanel />}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </main>
     </div>

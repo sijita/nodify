@@ -6,6 +6,7 @@ import { agentMeta } from "@/lib/agents";
 import { setModel, shareMcp, shareSkill } from "@/lib/tauri";
 import type { AgentScan } from "@/lib/types";
 import { GitMerge } from "lucide-react";
+import { motion } from "motion/react";
 import { useMemo, useState } from "react";
 import { mutate } from "swr";
 import { useAgentScan } from "../mcps/use-mcps";
@@ -150,10 +151,11 @@ export function AgentsPanel() {
 
       <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {source &&
-          plans.map((plan) => (
+          plans.map((plan, i) => (
             <DiffPanel
               key={plan.target.id}
               plan={plan}
+              index={i}
               sourceBadge={agentMeta(source.id).badge}
               busy={busy === plan.target.id}
               disabled={!!busy}
@@ -256,9 +258,11 @@ function SourceHero({
       {/* barra de sincronía global */}
       <div className="flex items-center gap-3 border-border border-t px-4 py-2.5">
         <div className="h-1 flex-1 overflow-hidden rounded-full bg-elevated-2">
-          <div
+          <motion.div
             className={allSynced ? "h-full bg-success" : "h-full bg-primary"}
-            style={{ width: `${Math.round(ratio * 100)}%` }}
+            initial={false}
+            animate={{ width: `${Math.round(ratio * 100)}%` }}
+            transition={{ type: "spring", stiffness: 260, damping: 30 }}
           />
         </div>
         <span className="font-mono text-[11px] text-faint">
@@ -276,15 +280,45 @@ function SourceHero({
   );
 }
 
+interface Row {
+  key: string;
+  glyph: string;
+  kind: string;
+  name: string;
+  tone: string;
+}
+
+/** Aplana el plan a filas de diff, en orden de presentación. */
+function rowsOf(plan: Plan): Row[] {
+  const rows: Row[] = [];
+  for (const n of plan.mcpsAdd)
+    rows.push({ key: `+m${n}`, glyph: "+", kind: "mcp", name: n, tone: "text-success" });
+  for (const n of plan.mcpsUpdate)
+    rows.push({ key: `~m${n}`, glyph: "~", kind: "mcp", name: n, tone: "text-warning" });
+  for (const n of plan.skillsAdd)
+    rows.push({ key: `+s${n}`, glyph: "+", kind: "skill", name: n, tone: "text-success" });
+  if (plan.modelTo)
+    rows.push({
+      key: "~model",
+      glyph: "~",
+      kind: "model",
+      name: plan.modelTo,
+      tone: "text-warning",
+    });
+  return rows;
+}
+
 /** Tarjeta de destino: cabecera con flecha `SRC ──▶ DST` + diff de terminal + acción. */
 function DiffPanel({
   plan,
+  index,
   sourceBadge,
   busy,
   disabled,
   onAlign,
 }: {
   plan: Plan;
+  index: number;
   sourceBadge: string;
   busy: boolean;
   disabled: boolean;
@@ -292,86 +326,93 @@ function DiffPanel({
 }) {
   const meta = agentMeta(plan.target.id);
   const aligned = plan.total === 0;
+  const rows = rowsOf(plan);
 
   return (
-    <Card className="flex flex-col overflow-hidden p-0">
-      {/* cabecera: SRC ──▶ DST + sello de estado */}
-      <div className="flex items-center justify-between gap-2 border-border border-b bg-elevated px-3.5 py-2.5">
-        <div className="flex items-center gap-2 font-mono text-[11px]">
-          <span className="flex h-6 w-6 items-center justify-center rounded-[var(--radius-sm)] border border-border-strong bg-surface font-semibold text-[10px]">
-            {sourceBadge}
-          </span>
-          <span className="text-faint">──▶</span>
-          <span className="flex h-6 w-6 items-center justify-center rounded-[var(--radius-sm)] border border-border-strong bg-surface font-semibold text-[10px]">
-            {meta.badge}
-          </span>
-          <span className="ml-1 font-semibold font-sans text-[13px]">{meta.name}</span>
-        </div>
-        {aligned ? (
-          <span className="font-mono text-[10px] tracking-[0.1em] text-success">≡ SYNC</span>
-        ) : (
-          <span className="font-mono text-[10px] tracking-[0.1em] text-warning">
-            Δ {plan.total}
-          </span>
-        )}
-      </div>
-
-      {/* cuerpo: diff estilo terminal */}
-      {aligned ? (
-        <div className="flex flex-1 items-center justify-center px-4 py-7 text-center font-mono text-[11px] text-faint">
-          {"// ya coincide con la fuente"}
-        </div>
-      ) : (
-        <div className="flex-1 bg-surface px-3.5 py-3 font-mono text-[12px] leading-[1.7]">
-          {plan.mcpsAdd.map((n) => (
-            <DiffRow key={`+m${n}`} glyph="+" kind="mcp" name={n} tone="text-success" />
-          ))}
-          {plan.mcpsUpdate.map((n) => (
-            <DiffRow key={`~m${n}`} glyph="~" kind="mcp" name={n} tone="text-warning" />
-          ))}
-          {plan.skillsAdd.map((n) => (
-            <DiffRow key={`+s${n}`} glyph="+" kind="skill" name={n} tone="text-success" />
-          ))}
-          {plan.modelTo && (
-            <DiffRow glyph="~" kind="model" name={plan.modelTo} tone="text-warning" />
+    <motion.div
+      className="h-full"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05, duration: 0.22, ease: "easeOut" }}
+    >
+      <Card className="flex h-full flex-col overflow-hidden p-0">
+        {/* cabecera: SRC ──▶ DST + sello de estado */}
+        <div className="flex items-center justify-between gap-2 border-border border-b bg-elevated px-3.5 py-2.5">
+          <div className="flex items-center gap-2 font-mono text-[11px]">
+            <span className="flex h-6 w-6 items-center justify-center rounded-[var(--radius-sm)] border border-border-strong bg-surface font-semibold text-[10px]">
+              {sourceBadge}
+            </span>
+            <motion.span
+              className="text-faint"
+              initial={{ opacity: 0, x: -3 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05 + 0.1, duration: 0.25 }}
+            >
+              ──▶
+            </motion.span>
+            <span className="flex h-6 w-6 items-center justify-center rounded-[var(--radius-sm)] border border-border-strong bg-surface font-semibold text-[10px]">
+              {meta.badge}
+            </span>
+            <span className="ml-1 font-semibold font-sans text-[13px]">{meta.name}</span>
+          </div>
+          {aligned ? (
+            <span className="font-mono text-[10px] tracking-[0.1em] text-success">≡ SYNC</span>
+          ) : (
+            <motion.span
+              key={plan.total}
+              className="font-mono text-[10px] tracking-[0.1em] text-warning"
+              initial={{ scale: 0.7, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 500, damping: 24 }}
+            >
+              Δ {plan.total}
+            </motion.span>
           )}
         </div>
-      )}
 
-      {/* acción */}
-      <div className="border-border border-t p-2.5">
-        <Button
-          variant={aligned ? "ghost" : "outline"}
-          size="sm"
-          onClick={onAlign}
-          disabled={disabled || aligned}
-          className="w-full"
-        >
-          {busy ? "alineando…" : aligned ? "sin cambios" : `Alinear · ${plan.total}`}
-        </Button>
-      </div>
-    </Card>
+        {/* cuerpo: diff estilo terminal (líneas apareciendo) */}
+        {aligned ? (
+          <div className="flex flex-1 items-center justify-center px-4 py-7 text-center font-mono text-[11px] text-faint">
+            {"// ya coincide con la fuente"}
+          </div>
+        ) : (
+          <div className="flex-1 bg-surface px-3.5 py-3 font-mono text-[12px] leading-[1.7]">
+            {rows.map((r, ri) => (
+              <DiffRow key={r.key} row={r} delay={index * 0.05 + 0.12 + ri * 0.03} />
+            ))}
+          </div>
+        )}
+
+        {/* acción */}
+        <div className="border-border border-t p-2.5">
+          <Button
+            variant={aligned ? "ghost" : "outline"}
+            size="sm"
+            onClick={onAlign}
+            disabled={disabled || aligned}
+            className="w-full"
+          >
+            {busy ? "alineando…" : aligned ? "sin cambios" : `Alinear · ${plan.total}`}
+          </Button>
+        </div>
+      </Card>
+    </motion.div>
   );
 }
 
-function DiffRow({
-  glyph,
-  kind,
-  name,
-  tone,
-}: {
-  glyph: string;
-  kind: string;
-  name: string;
-  tone: string;
-}) {
+function DiffRow({ row, delay }: { row: Row; delay: number }) {
   return (
-    <div className="flex items-center gap-2.5">
-      <span className={`w-2 flex-shrink-0 font-semibold ${tone}`}>{glyph}</span>
-      <span className="w-11 flex-shrink-0 text-faint">{kind}</span>
-      <span className="truncate text-muted-foreground" title={name}>
-        {name}
+    <motion.div
+      className="flex items-center gap-2.5"
+      initial={{ opacity: 0, x: -4 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay, duration: 0.18, ease: "easeOut" }}
+    >
+      <span className={`w-2 flex-shrink-0 font-semibold ${row.tone}`}>{row.glyph}</span>
+      <span className="w-11 flex-shrink-0 text-faint">{row.kind}</span>
+      <span className="truncate text-muted-foreground" title={row.name}>
+        {row.name}
       </span>
-    </div>
+    </motion.div>
   );
 }

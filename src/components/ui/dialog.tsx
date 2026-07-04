@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { X } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import {
   type FormEvent,
   type ReactNode,
@@ -92,69 +93,89 @@ export function DialogProvider({ children }: { children: ReactNode }) {
   return (
     <DialogContext.Provider value={{ confirm, prompt }}>
       {children}
-      {pending && (
-        <div
-          className="fixed inset-0 z-100 flex items-center justify-center bg-black/55 p-4"
-          onMouseDown={(e) => {
-            if (e.target === e.currentTarget) close(pending.kind === "confirm" ? false : null);
-          }}
-        >
-          <Card className="w-full max-w-md p-5">
-            <div className="mb-3 flex items-start justify-between gap-4">
-              <span className="font-semibold text-sm tracking-[0.08em]">{pending.opts.title}</span>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => close(pending.kind === "confirm" ? false : null)}
-                aria-label="Cerrar"
-              >
-                <X size={16} />
-              </Button>
-            </div>
-
-            {pending.opts.message && (
-              <p className="mb-4 font-sans text-muted-foreground text-xs">{pending.opts.message}</p>
-            )}
-
-            {pending.kind === "prompt" ? (
-              <form onSubmit={submit} className="flex flex-col gap-4">
-                <Input
-                  ref={inputRef}
-                  value={value}
-                  placeholder={pending.opts.placeholder}
-                  onChange={(e) => setValue(e.target.value)}
-                  className="w-full border border-border bg-surface px-3 py-2 rounded-[var(--radius-sm)]"
-                />
-                <div className="flex justify-end gap-2">
-                  <Button type="button" variant="ghost" size="sm" onClick={() => close(null)}>
-                    {pending.opts.cancelLabel ?? "Cancelar"}
-                  </Button>
-                  <Button type="submit" variant="accent" size="sm">
-                    {pending.opts.confirmLabel ?? "Guardar"}
+      <AnimatePresence>
+        {pending && (
+          <motion.div
+            className="fixed inset-0 z-100 flex items-center justify-center bg-black/55 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.14, ease: "easeOut" }}
+            onMouseDown={(e) => {
+              if (e.target === e.currentTarget) close(pending.kind === "confirm" ? false : null);
+            }}
+          >
+            <motion.div
+              className="w-full max-w-md"
+              initial={{ opacity: 0, scale: 0.97, y: 4 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.98, y: 2 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+            >
+              <Card className="p-5">
+                <div className="mb-3 flex items-start justify-between gap-4">
+                  <span className="font-semibold text-sm tracking-[0.08em]">
+                    {pending.opts.title}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => close(pending.kind === "confirm" ? false : null)}
+                    aria-label="Cerrar"
+                  >
+                    <X size={16} />
                   </Button>
                 </div>
-              </form>
-            ) : (
-              <div className="flex justify-end gap-2">
-                <Button type="button" variant="ghost" size="sm" onClick={() => close(false)}>
-                  {pending.opts.cancelLabel ?? "Cancelar"}
-                </Button>
-                <Button
-                  type="button"
-                  variant={pending.opts.danger ? "accent" : "outline"}
-                  size="sm"
-                  onClick={() => close(true)}
-                  className={
-                    pending.opts.danger ? "bg-danger text-white hover:opacity-[0.88]" : undefined
-                  }
-                >
-                  {pending.opts.confirmLabel ?? "Confirmar"}
-                </Button>
-              </div>
-            )}
-          </Card>
-        </div>
-      )}
+
+                {pending.opts.message && (
+                  <p className="mb-4 font-sans text-muted-foreground text-xs">
+                    {pending.opts.message}
+                  </p>
+                )}
+
+                {pending.kind === "prompt" ? (
+                  <form onSubmit={submit} className="flex flex-col gap-4">
+                    <Input
+                      ref={inputRef}
+                      value={value}
+                      placeholder={pending.opts.placeholder}
+                      onChange={(e) => setValue(e.target.value)}
+                      className="w-full border border-border bg-surface px-3 py-2 rounded-[var(--radius-sm)]"
+                    />
+                    <div className="flex justify-end gap-2">
+                      <Button type="button" variant="ghost" size="sm" onClick={() => close(null)}>
+                        {pending.opts.cancelLabel ?? "Cancelar"}
+                      </Button>
+                      <Button type="submit" variant="accent" size="sm">
+                        {pending.opts.confirmLabel ?? "Guardar"}
+                      </Button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="flex justify-end gap-2">
+                    <Button type="button" variant="ghost" size="sm" onClick={() => close(false)}>
+                      {pending.opts.cancelLabel ?? "Cancelar"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={pending.opts.danger ? "accent" : "outline"}
+                      size="sm"
+                      onClick={() => close(true)}
+                      className={
+                        pending.opts.danger
+                          ? "bg-danger text-white hover:opacity-[0.88]"
+                          : undefined
+                      }
+                    >
+                      {pending.opts.confirmLabel ?? "Confirmar"}
+                    </Button>
+                  </div>
+                )}
+              </Card>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </DialogContext.Provider>
   );
 }

@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Bot, Grid2x2, KeyRound, RefreshCw } from "lucide-react";
+import { motion } from "motion/react";
 import { create } from "zustand";
 
 export type NavSection = "matrix" | "agents" | "secrets" | "sync";
@@ -35,14 +36,19 @@ export function DockNav() {
             type="button"
             onClick={() => setActive(id)}
             className={cn(
-              "flex w-[58px] cursor-pointer flex-col items-center gap-1.5 rounded-[9px] border-none px-1.5 py-2.5 font-mono",
-              isActive
-                ? "bg-primary text-primary-foreground"
-                : "bg-transparent text-muted-foreground hover:text-foreground",
+              "relative flex w-[58px] cursor-pointer flex-col items-center gap-1.5 rounded-[9px] border-none bg-transparent px-1.5 py-2.5 font-mono transition-colors",
+              isActive ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
             )}
           >
-            <Icon size={18} strokeWidth={2} />
-            <span className="text-[9px] tracking-[0.1em]">{label}</span>
+            {isActive && (
+              <motion.span
+                layoutId="dock-active"
+                className="absolute inset-0 rounded-[9px] bg-primary"
+                transition={{ type: "spring", stiffness: 480, damping: 34 }}
+              />
+            )}
+            <Icon size={18} strokeWidth={2} className="relative z-1" />
+            <span className="relative z-1 text-[9px] tracking-[0.1em]">{label}</span>
           </button>
         );
       })}
