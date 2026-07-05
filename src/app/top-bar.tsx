@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Moon, RefreshCw, Search, Sun } from "lucide-react";
 import { motion } from "motion/react";
+import { Logo } from "./logo";
 import { useTheme } from "./theme-store";
 
 interface Props {
@@ -15,7 +16,8 @@ export function TopBar({ query, onQuery, onScan, scanning }: Props) {
   const { theme, toggle } = useTheme();
   return (
     <div className="mb-6 flex flex-wrap items-center justify-between gap-5">
-      <div className="flex items-baseline gap-3">
+      <div className="flex items-center gap-3">
+        <Logo className="h-8 w-auto shrink-0 object-contain" />
         <span className="font-bold text-[22px] tracking-[0.14em]">NODIFY</span>
         <span className="font-sans text-muted-foreground text-xs">agent control center</span>
       </div>
