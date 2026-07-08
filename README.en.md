@@ -56,9 +56,11 @@ Grab the installer for your system from the **[latest release](https://github.co
 | **Windows** | `Nodify_*_x64-setup.exe` or `Nodify_*_x64_en-US.msi` |
 | **Linux** | `Nodify_*_amd64.AppImage`, `*_amd64.deb` or `*.x86_64.rpm` |
 
-> **First launch (unsigned app):** on **macOS** *right-click → Open* the first time (Gatekeeper
-> blocks a plain double-click); on **Windows**, SmartScreen → *More info → Run anyway*. This is
-> because the installers aren't code-signed with a certificate yet.
+> **First launch (unsigned app):** the installers aren't code-signed/notarized yet.
+> - **macOS:** if you see *“Nodify is damaged”*, remove the quarantine flag with
+>   `xattr -dr com.apple.quarantine /Applications/Nodify.app` and open it. (On Apple Silicon,
+>   *right-click → Open* does not fix that specific message.)
+> - **Windows:** SmartScreen → *More info → Run anyway*.
 
 Prefer to build it yourself? See [Installation](#installation).
 

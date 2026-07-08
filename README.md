@@ -56,9 +56,11 @@ Descarga el instalador de tu sistema desde la **[última release](https://github
 | **Windows** | `Nodify_*_x64-setup.exe` o `Nodify_*_x64_en-US.msi` |
 | **Linux** | `Nodify_*_amd64.AppImage`, `*_amd64.deb` o `*.x86_64.rpm` |
 
-> **Primera apertura (app sin firmar):** en **macOS** haz *clic derecho → Abrir* la primera vez
-> (Gatekeeper bloquea el doble-clic); en **Windows**, SmartScreen → *Más información → Ejecutar de
-> todas formas*. Es porque los instaladores aún no van firmados con certificado.
+> **Primera apertura (app sin firmar):** los instaladores aún no van firmados/notarizados.
+> - **macOS:** si aparece *«Nodify está dañado»*, quita la cuarentena con
+>   `xattr -dr com.apple.quarantine /Applications/Nodify.app` y ábrelo. (En Apple Silicon,
+>   *clic derecho → Abrir* no basta para ese mensaje concreto.)
+> - **Windows:** SmartScreen → *Más información → Ejecutar de todas formas*.
 
 ¿Prefieres compilarlo tú mismo? Ver [Instalación](#instalación).
 
