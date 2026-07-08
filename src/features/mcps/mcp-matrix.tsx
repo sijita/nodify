@@ -7,16 +7,7 @@ import { AgentDrawer } from "@/features/agents/agent-drawer";
 import { useT } from "@/i18n";
 import { agentMeta } from "@/lib/agents";
 import type { AgentScan } from "@/lib/types";
-import {
-  CornerDownRight,
-  Info,
-  List,
-  Pencil,
-  Plus,
-  SlidersHorizontal,
-  Sparkles,
-  Trash2,
-} from "lucide-react";
+import { Info, List, Pencil, Plus, SlidersHorizontal, Sparkles, Trash2 } from "lucide-react";
 import { motion } from "motion/react";
 import { type ReactNode, useMemo, useState } from "react";
 import { AddMcpDialog } from "./add-mcp-dialog";
@@ -79,24 +70,19 @@ function RowLabel({ name, tag, onInfo }: { name: string; tag: string; onInfo: ()
   );
 }
 
-/** Pista de acción dentro de una celda (aparece/realza al hover del cursor). */
-function ActionHint({ kind }: { kind: "remove" | "share" | "edit" }) {
+/** Icono de acción en la esquina superior derecha de la celda (señal de qué hará el clic). */
+function CellIcon({ kind }: { kind: "remove" | "edit" }) {
   const t = useT();
   const cfg = {
     remove: { Icon: Trash2, label: t("matrix.remove"), color: "group-hover:text-danger" },
-    share: {
-      Icon: CornerDownRight,
-      label: t("matrix.shareHere"),
-      color: "group-hover:text-success",
-    },
     edit: { Icon: Pencil, label: t("matrix.edit"), color: "group-hover:text-foreground" },
   }[kind];
   return (
-    <span
-      className={`flex items-center gap-1 text-[10px] text-faint transition-colors ${cfg.color}`}
-    >
-      <cfg.Icon size={10} /> {cfg.label}
-    </span>
+    <cfg.Icon
+      size={13}
+      aria-label={cfg.label}
+      className={`absolute top-4 right-4 text-faint transition-colors ${cfg.color}`}
+    />
   );
 }
 
@@ -337,21 +323,15 @@ export function McpMatrix({ query }: { query: string }) {
                     onClick={actionable ? onClick : undefined}
                     title={title}
                     disabled={actionable ? actions.busy : undefined}
-                    className={`group flex min-w-0 flex-col gap-1.5 border-border border-r border-b p-4 text-left last:border-r-0 ${
+                    className={`group relative flex min-w-0 flex-col gap-1.5 border-border border-r border-b p-4 text-left last:border-r-0 ${
                       actionable ? "cursor-pointer hover:bg-elevated-2" : ""
                     }`}
                   >
+                    {installed && <CellIcon kind="remove" />}
                     <CellBody status={cell.status} changeKey={source ? "share" : cell.value}>
-                      {source ? (
-                        <ActionHint kind="share" />
-                      ) : (
-                        <>
-                          <div className="truncate text-muted-foreground text-xs">
-                            {showVal(cell.value)}
-                          </div>
-                          {installed && <ActionHint kind="remove" />}
-                        </>
-                      )}
+                      <div className="truncate text-muted-foreground text-xs">
+                        {source ? t("matrix.shareHere") : showVal(cell.value)}
+                      </div>
                     </CellBody>
                   </Tag>
                 );
@@ -414,21 +394,15 @@ export function McpMatrix({ query }: { query: string }) {
                           ? t("matrix.shareFrom", { agent: agentMeta(source.id).name })
                           : ""
                     }
-                    className={`group flex min-w-0 flex-col gap-1.5 border-border border-r border-b p-4 text-left last:border-r-0 ${
+                    className={`group relative flex min-w-0 flex-col gap-1.5 border-border border-r border-b p-4 text-left last:border-r-0 ${
                       actionable ? "cursor-pointer hover:bg-elevated-2" : ""
                     }`}
                   >
+                    {installed && <CellIcon kind="remove" />}
                     <CellBody status={cell.status} changeKey={source ? "share" : cell.value}>
-                      {source ? (
-                        <ActionHint kind="share" />
-                      ) : (
-                        <>
-                          <div className="truncate text-muted-foreground text-xs">
-                            {showVal(cell.value)}
-                          </div>
-                          {installed && <ActionHint kind="remove" />}
-                        </>
-                      )}
+                      <div className="truncate text-muted-foreground text-xs">
+                        {source ? t("matrix.shareHere") : showVal(cell.value)}
+                      </div>
                     </CellBody>
                   </Tag>
                 );
@@ -478,15 +452,15 @@ export function McpMatrix({ query }: { query: string }) {
                     onClick={editable ? onClick : undefined}
                     disabled={editable ? actions.busy : undefined}
                     title={editable ? t("matrix.editModel") : ""}
-                    className={`group flex min-w-0 flex-col gap-1.5 border-border border-r border-b p-4 text-left last:border-r-0 ${
+                    className={`group relative flex min-w-0 flex-col gap-1.5 border-border border-r border-b p-4 text-left last:border-r-0 ${
                       editable ? "cursor-pointer hover:bg-elevated-2" : ""
                     }`}
                   >
+                    {editable && <CellIcon kind="edit" />}
                     <CellBody status={cell.status} changeKey={cell.value}>
                       <div className="truncate text-muted-foreground text-xs">
                         {showVal(cell.value)}
                       </div>
-                      {editable && <ActionHint kind="edit" />}
                     </CellBody>
                   </Tag>
                 );
