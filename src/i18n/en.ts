@@ -16,8 +16,9 @@ export const en = {
     scan: "SCAN",
     scanning: "SCANNING",
     tagline: "agent control center",
-    filter: "filter config…",
-    browserDemo: "> browser preview · DEMO data (the real backend only runs in the native app)",
+    filter: "Filter config…",
+    browserDemo:
+      "> browser preview · DEMO data (the real backend only runs in the native app)",
   },
   nav: {
     matrix: "MATRIX",
@@ -98,7 +99,8 @@ export const en = {
     confirmOneMsg:
       "Apply {n} change(s) to {target} from {source}. Nothing it already has will be removed.",
     confirmAllTitle: "Align all",
-    confirmAllMsg: "Propagate {n} change(s) from {source} to {count} agent(s). Nothing is removed.",
+    confirmAllMsg:
+      "Propagate {n} change(s) from {source} to {count} agent(s). Nothing is removed.",
     doneOne: "{target}: {n} change(s) applied",
     doneAll: "{n} change(s) applied across {count} agent(s)",
     kindMcp: "mcp",
@@ -110,7 +112,7 @@ export const en = {
     intro:
       "Environment variables referenced by MCPs and providers. The value is written to Claude (settings.env); Codex/OpenCode read them from the shell or auth.json. Nodify does not store the value (ADR-0004).",
     none: "> no referenced variables",
-    value: "value…",
+    value: "Value…",
     setClaude: "set Claude",
     written: "{key} → written to Claude (settings.env)",
   },
@@ -125,7 +127,8 @@ export const en = {
     diff: "diff",
     push: "push",
     pullApply: "pull + apply",
-    nativeOnly: "> push/pull require the native app + git; the bundle can be exported here.",
+    nativeOnly:
+      "> push/pull require the native app + git; the bundle can be exported here.",
     diffOk: "diff computed",
     pushOk: "push OK",
     pullOk: "pull applied",

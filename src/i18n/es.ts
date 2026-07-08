@@ -18,7 +18,7 @@ export const es: Dict = {
     scan: "SCAN",
     scanning: "SCANEANDO",
     tagline: "centro de control de agentes",
-    filter: "filtrar config…",
+    filter: "Filtrar config…",
     browserDemo:
       "> preview en navegador · datos DEMO (el backend real solo corre en la app nativa)",
   },
@@ -101,7 +101,8 @@ export const es: Dict = {
     confirmOneMsg:
       "Aplicar {n} cambio(s) a {target} desde {source}. No se elimina nada de lo que ya tenga.",
     confirmAllTitle: "Alinear todos",
-    confirmAllMsg: "Propagar {n} cambio(s) de {source} a {count} agente(s). No se elimina nada.",
+    confirmAllMsg:
+      "Propagar {n} cambio(s) de {source} a {count} agente(s). No se elimina nada.",
     doneOne: "{target}: {n} cambio(s) aplicados",
     doneAll: "{n} cambio(s) aplicados en {count} agente(s)",
     kindMcp: "mcp",
@@ -113,7 +114,7 @@ export const es: Dict = {
     intro:
       "Variables de entorno referenciadas por MCPs y proveedores. El valor se escribe en Claude (settings.env); Codex/OpenCode las leen del shell o auth.json. Nodify no guarda el valor (ADR-0004).",
     none: "> sin variables referenciadas",
-    value: "valor…",
+    value: "Valor…",
     setClaude: "set Claude",
     written: "{key} → escrito en Claude (settings.env)",
   },
@@ -128,7 +129,8 @@ export const es: Dict = {
     diff: "diff",
     push: "push",
     pullApply: "pull + aplicar",
-    nativeOnly: "> push/pull requieren la app nativa + git; el bundle sí se puede exportar aquí.",
+    nativeOnly:
+      "> push/pull requieren la app nativa + git; el bundle sí se puede exportar aquí.",
     diffOk: "diff calculado",
     pushOk: "push OK",
     pullOk: "pull aplicado",
@@ -146,7 +148,8 @@ export const es: Dict = {
     skills: "SKILLS ({n})",
     providersIntro:
       "Proveedores definidos en la config. Las API keys no se muestran: solo el nombre de la variable de entorno que las aporta (ADR-0004).",
-    noProviders: "> este agente no declara proveedores en archivo (usa env vars).",
+    noProviders:
+      "> este agente no declara proveedores en archivo (usa env vars).",
     key: "key:",
     rulesPlaceholder: "# Reglas del agente…",
     saveRules: "guardar",
