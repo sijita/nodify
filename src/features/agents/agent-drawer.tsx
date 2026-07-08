@@ -1,11 +1,12 @@
 import { AgentGlyph } from "@/components/agent-glyph";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { DetailDialog, type DetailTarget } from "@/features/mcps/detail-dialog";
 import { useT } from "@/i18n";
 import { agentMeta } from "@/lib/agents";
 import { listProviders, readRules, writeRules } from "@/lib/tauri";
 import type { AgentScan, ProviderInfo } from "@/lib/types";
-import { Save, X } from "lucide-react";
+import { Blocks, Info, Save, Sparkles, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { mutate } from "swr";
 
@@ -93,32 +94,96 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
+/** Fila-tarjeta clicable (MCP o skill): icono + nombre + subtítulo truncado + info al hover. */
+function RowCard({
+  icon: Icon,
+  name,
+  subtitle,
+  onClick,
+}: {
+  icon: typeof Blocks;
+  name: string;
+  subtitle: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group flex w-full items-center gap-3 rounded-[var(--radius-sm)] border border-border p-3 text-left hover:border-border-strong hover:bg-elevated-2"
+    >
+      <Icon size={14} className="shrink-0 text-faint" />
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-[13px]">{name}</div>
+        <div className="truncate text-[11px] text-faint">{subtitle || "—"}</div>
+      </div>
+      <Info
+        size={12}
+        className="shrink-0 text-faint opacity-0 transition-opacity group-hover:opacity-100"
+      />
+    </button>
+  );
+}
+
 function Overview({ agent }: { agent: AgentScan }) {
   const t = useT();
+  const [detail, setDetail] = useState<DetailTarget | null>(null);
+
   return (
     <>
       <Section title={t("agent.model")}>
         <div className="text-sm">{agent.config.model ?? t("matrix.notSet")}</div>
       </Section>
+
       <Section title={t("agent.mcps", { n: agent.mcps.length })}>
-        <ul className="flex flex-col gap-1 text-xs">
-          {agent.mcps.map((m) => (
-            <li key={m.name} className="flex justify-between gap-3">
-              <span>{m.name}</span>
-              <span className="truncate text-faint">{m.target}</span>
-            </li>
-          ))}
-          {agent.mcps.length === 0 && <li className="text-faint">—</li>}
-        </ul>
+        {agent.mcps.length === 0 ? (
+          <p className="text-faint text-xs">—</p>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {agent.mcps.map((m) => (
+              <li key={m.name}>
+                <RowCard
+                  icon={Blocks}
+                  name={m.name}
+                  subtitle={m.target}
+                  onClick={() =>
+                    setDetail({ kind: "mcp", agentId: agent.id, mcp: m, presentIn: [agent.id] })
+                  }
+                />
+              </li>
+            ))}
+          </ul>
+        )}
       </Section>
+
       <Section title={t("agent.skills", { n: agent.skills.length })}>
-        <ul className="flex flex-col gap-1 text-xs">
-          {agent.skills.map((s) => (
-            <li key={s.name}>{s.name}</li>
-          ))}
-          {agent.skills.length === 0 && <li className="text-faint">—</li>}
-        </ul>
+        {agent.skills.length === 0 ? (
+          <p className="text-faint text-xs">—</p>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {agent.skills.map((s) => (
+              <li key={s.name}>
+                <RowCard
+                  icon={Sparkles}
+                  name={s.name}
+                  subtitle={s.description}
+                  onClick={() =>
+                    setDetail({
+                      kind: "skill",
+                      agentId: agent.id,
+                      name: s.name,
+                      description: s.description,
+                      presentIn: [agent.id],
+                    })
+                  }
+                />
+              </li>
+            ))}
+          </ul>
+        )}
       </Section>
+
+      <DetailDialog target={detail} onClose={() => setDetail(null)} />
     </>
   );
 }

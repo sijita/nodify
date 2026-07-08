@@ -14,6 +14,13 @@ export const es: Dict = {
     changeTheme: "Cambiar tema",
     changeLang: "Cambiar idioma",
   },
+  visibility: {
+    button: "Agentes visibles",
+    title: "MOSTRAR / OCULTAR AGENTES",
+    hint: "Ocultar un agente solo lo quita de la vista — Nodify sigue leyendo y escribiendo su config con normalidad.",
+    allHidden:
+      "> todos los agentes están ocultos — usa el icono del ojo en la barra superior para mostrar alguno",
+  },
   topbar: {
     scan: "SCAN",
     scanning: "SCANEANDO",
@@ -67,15 +74,48 @@ export const es: Dict = {
     modelMsg: "Modelo por defecto de {agent}:",
     modelPlaceholder: "p.ej. claude-opus-4-8",
     viewDetail: "Ver detalle de {agent}",
+    remove: "eliminar",
+    edit: "editar",
+    info: "¿qué es esto?",
+  },
+  info: {
+    skillTitle: "Skill",
+    mcpTitle: "Servidor MCP",
+    description: "DESCRIPCIÓN",
+    noDescription: "(sin descripción en el frontmatter)",
+    doc: "SKILL.md",
+    transport: "TRANSPORTE",
+    endpoint: "ENDPOINT",
+    command: "COMANDO",
+    status: "ESTADO",
+    enabled: "habilitado",
+    disabled: "deshabilitado",
+    unset: "sin definir",
+    secrets: "ENV VARS REFERENCIADAS",
+    none: "—",
+    presentIn: "PRESENTE EN",
+    mcpNote:
+      "Los servidores MCP no traen una descripción propia; esto es cómo está configurado.",
+    loadError: "no se pudo leer SKILL.md",
   },
   addMcp: {
     title: "AÑADIR MCP",
     name: "nombre (p.ej. github)",
-    url: "url (https://…)",
-    command: "command (p.ej. npx)",
-    args: "args (separados por espacio)",
+    url: "https://…",
+    command: "p.ej. npx",
+    args: "separados por espacio",
     installIn: "INSTALAR EN",
     install: "Instalar",
+    nameLabel: "NOMBRE",
+    transportLabel: "TRANSPORTE",
+    commandLabel: "COMANDO",
+    urlLabel: "URL",
+    argsLabel: "ARGUMENTOS",
+    envVars: "ENV VARS",
+    headers: "HEADERS",
+    addPair: "añadir",
+    keyPh: "CLAVE",
+    valuePh: "valor",
   },
   align: {
     title: "ALINEAR",
@@ -112,7 +152,7 @@ export const es: Dict = {
   secrets: {
     title: "SECRETOS",
     intro:
-      "Variables de entorno referenciadas por MCPs y proveedores. El valor se escribe en Claude (settings.env); Codex/OpenCode las leen del shell o auth.json. Nodify no guarda el valor (ADR-0004).",
+      "Variables de entorno referenciadas por MCPs y proveedores. El valor se escribe en Claude (settings.env); Codex/OpenCode las leen del shell o auth.json. Nodify no guarda el valor.",
     none: "> sin variables referenciadas",
     value: "Valor…",
     setClaude: "set Claude",
@@ -121,7 +161,7 @@ export const es: Dict = {
   sync: {
     title: "SYNC",
     intro:
-      "Bundle canónico portable, sin valores de secretos (solo referencias). Push/Pull manual contra un repo de GitHub, con diff previo. Ver ADR-0006.",
+      "Bundle canónico portable, sin valores de secretos (solo referencias). Push/Pull manual contra un repo de GitHub, con diff previo.",
     bundle: "BUNDLE",
     regenerate: "regenerar",
     repository: "REPOSITORIO",
@@ -147,7 +187,7 @@ export const es: Dict = {
     mcps: "MCPS ({n})",
     skills: "SKILLS ({n})",
     providersIntro:
-      "Proveedores definidos en la config. Las API keys no se muestran: solo el nombre de la variable de entorno que las aporta (ADR-0004).",
+      "Proveedores definidos en la config. Las API keys no se muestran: solo el nombre de la variable de entorno que las aporta.",
     noProviders:
       "> este agente no declara proveedores en archivo (usa env vars).",
     key: "key:",

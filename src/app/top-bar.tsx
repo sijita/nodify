@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { useLocale, useT } from "@/i18n";
 import { Moon, RefreshCw, Search, Sun } from "lucide-react";
 import { motion } from "motion/react";
+import { AgentVisibilityMenu } from "./agent-visibility-menu";
 import { Logo } from "./logo";
 import { useTheme } from "./theme-store";
 
@@ -29,12 +30,15 @@ export function TopBar({ query, onQuery, onScan, scanning }: Props) {
         <div className="flex items-center gap-2 rounded-[var(--radius-sm)] border border-border bg-surface px-2.5">
           <Search size={14} className="text-faint" />
           <Input
+            variant="bare"
             value={query}
             onChange={(e) => onQuery(e.target.value)}
             placeholder={t("topbar.filter")}
-            className="w-[150px] py-2.5"
+            className="h-9 w-[150px] px-0"
           />
         </div>
+
+        <AgentVisibilityMenu />
 
         <Button
           variant="outline"

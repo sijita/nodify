@@ -38,22 +38,72 @@ pub fn parse_frontmatter(content: &str) -> (Option<String>, Option<String>) {
     };
     // el bloque va hasta la siguiente línea con solo `---`
     let end = rest.find("\n---").map(|i| i + 1).unwrap_or(rest.len());
-    let block = &rest[..end];
+    let lines: Vec<&str> = rest[..end].lines().collect();
 
     let mut name = None;
     let mut description = None;
-    for line in block.lines() {
-        if let Some((key, val)) = line.split_once(':') {
-            let key = key.trim();
-            let val = unquote(val.trim());
-            match key {
-                "name" if !val.is_empty() => name = Some(val),
-                "description" if !val.is_empty() => description = Some(val),
-                _ => {}
-            }
+    let mut i = 0;
+    while i < lines.len() {
+        let line = lines[i];
+        // Solo claves de primer nivel (sin sangría ni líneas vacías).
+        if line.trim().is_empty() || line.starts_with(char::is_whitespace) {
+            i += 1;
+            continue;
         }
+        let Some((key, val)) = line.split_once(':') else {
+            i += 1;
+            continue;
+        };
+        let key = key.trim();
+        let raw = val.trim();
+        let (value, next) = if is_block_scalar(raw) {
+            // `description: >` / `|` → el texto son las líneas sangradas siguientes.
+            read_block_scalar(&lines, i + 1, raw.starts_with('>'))
+        } else {
+            (unquote(raw), i + 1)
+        };
+        match key {
+            "name" if !value.is_empty() => name = Some(value),
+            "description" if !value.is_empty() => description = Some(value),
+            _ => {}
+        }
+        i = next;
     }
     (name, description)
+}
+
+/// ¿El valor es un indicador de bloque escalar YAML (`>`, `|`, con recorte `-`/`+`)?
+fn is_block_scalar(s: &str) -> bool {
+    let mut chars = s.chars();
+    matches!(chars.next(), Some('>') | Some('|'))
+        && chars.all(|c| c == '-' || c == '+' || c.is_ascii_digit())
+}
+
+/// Lee las líneas sangradas de un bloque escalar. `folded` (`>`) une con espacios;
+/// literal (`|`) une con saltos de línea. Devuelve `(texto, índice de la línea siguiente)`.
+fn read_block_scalar(lines: &[&str], start: usize, folded: bool) -> (String, usize) {
+    let mut collected: Vec<String> = Vec::new();
+    let mut i = start;
+    while i < lines.len() {
+        let line = lines[i];
+        if line.trim().is_empty() {
+            collected.push(String::new());
+        } else if line.starts_with(char::is_whitespace) {
+            collected.push(line.trim().to_string());
+        } else {
+            break; // siguiente clave de primer nivel
+        }
+        i += 1;
+    }
+    while collected.last().is_some_and(|s| s.is_empty()) {
+        collected.pop();
+    }
+    let joined = if folded {
+        collected.join(" ")
+    } else {
+        collected.join("\n")
+    };
+    (joined.trim().to_string(), i)
 }
 
 fn unquote(s: &str) -> String {
@@ -78,6 +128,18 @@ mod tests {
         let (n, d) = parse_frontmatter(md);
         assert_eq!(n.as_deref(), Some("code-review"));
         assert_eq!(d.as_deref(), Some("Revisa el diff"));
+    }
+
+    #[test]
+    fn parses_folded_and_literal_block_scalars() {
+        let folded = "---\nname: pdf\ndescription: >\n  Extrae texto de PDFs\n  y los resume.\nother: 1\n---\n# body";
+        let (n, d) = parse_frontmatter(folded);
+        assert_eq!(n.as_deref(), Some("pdf"));
+        assert_eq!(d.as_deref(), Some("Extrae texto de PDFs y los resume."));
+
+        let literal = "---\ndescription: |\n  línea uno\n  línea dos\n---\n";
+        let (_, d) = parse_frontmatter(literal);
+        assert_eq!(d.as_deref(), Some("línea uno\nlínea dos"));
     }
 
     #[test]

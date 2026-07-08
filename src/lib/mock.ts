@@ -156,6 +156,26 @@ export function mockRemoveSkill(agentId: string, name: string): void {
   if (agent) agent.skills = agent.skills.filter((s) => s.name !== name);
 }
 
+/** SKILL.md de ejemplo para el modal de detalle en el preview (navegador). */
+export function mockReadSkill(agentId: string, name: string): string {
+  const agent = state.find((a) => a.id === agentId);
+  const desc = agent?.skills.find((s) => s.name === name)?.description ?? "";
+  return `---
+name: ${name}
+description: ${desc}
+---
+
+# ${name}
+
+${desc || "Skill de demostración."}
+
+## Cuándo usar
+
+Este es un cuerpo de SKILL.md de ejemplo (preview). En la app nativa aquí verás la
+documentación real del skill: qué hace, cuándo se activa y cómo se usa.
+`;
+}
+
 const mockRules: Record<string, string> = {
   "claude-code":
     "# Reglas globales\n\n- Escribe tests primero.\n- Commits en Conventional Commits.\n",

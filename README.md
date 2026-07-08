@@ -6,6 +6,8 @@
 
 **Un solo panel para gobernar la configuración de todos tus agentes de IA de código.**
 
+[![Última release](https://img.shields.io/github/v/release/sijita/nodify?label=descargar&sort=semver)](https://github.com/sijita/nodify/releases/latest)
+&nbsp;·&nbsp;
 🌐 Read this in [English](README.en.md)
 
 </div>
@@ -25,6 +27,7 @@ retro/hacker, bilingüe (ES/EN) y con tema claro/oscuro.
 
 ## Tabla de contenidos
 
+- [Descargar](#descargar)
 - [El problema](#el-problema)
 - [Características clave](#características-clave)
 - [Interfaz](#interfaz)
@@ -39,6 +42,27 @@ retro/hacker, bilingüe (ES/EN) y con tema claro/oscuro.
 - [Roadmap](#roadmap)
 - [Convenciones y contribución](#convenciones-y-contribución)
 - [Licencia](#licencia)
+
+---
+
+## Descargar
+
+Descarga el instalador de tu sistema desde la **[última release](https://github.com/sijita/nodify/releases/latest)**:
+
+| Sistema | Archivo |
+| --- | --- |
+| **macOS** (Apple Silicon) | `Nodify_*_aarch64.dmg` |
+| **macOS** (Intel) | `Nodify_*_x64.dmg` |
+| **Windows** | `Nodify_*_x64-setup.exe` o `Nodify_*_x64_en-US.msi` |
+| **Linux** | `Nodify_*_amd64.AppImage`, `*_amd64.deb` o `*.x86_64.rpm` |
+
+> **Primera apertura (app sin firmar):** los instaladores aún no van firmados/notarizados.
+> - **macOS:** si aparece *«Nodify está dañado»*, quita la cuarentena con
+>   `xattr -dr com.apple.quarantine /Applications/Nodify.app` y ábrelo. (En Apple Silicon,
+>   *clic derecho → Abrir* no basta para ese mensaje concreto.)
+> - **Windows:** SmartScreen → *Más información → Ejecutar de todas formas*.
+
+¿Prefieres compilarlo tú mismo? Ver [Instalación](#instalación).
 
 ---
 

@@ -11,7 +11,7 @@ import { GitMerge } from "lucide-react";
 import { motion } from "motion/react";
 import { useMemo, useState } from "react";
 import { mutate } from "swr";
-import { useAgentScan } from "../mcps/use-mcps";
+import { useVisibleAgents } from "../mcps/use-mcps";
 
 interface Plan {
   target: AgentScan;
@@ -52,7 +52,7 @@ function planFor(source: AgentScan, target: AgentScan): Plan {
  * Es aditivo: nunca elimina lo que el destino tenga de más.
  */
 export function AgentsPanel() {
-  const { agents, error, isLoading } = useAgentScan();
+  const { agents, error, isLoading } = useVisibleAgents();
   const dialog = useDialog();
   const t = useT();
   const [sourceId, setSourceId] = useState<string | null>(null);

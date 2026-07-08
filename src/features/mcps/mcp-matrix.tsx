@@ -7,13 +7,14 @@ import { AgentDrawer } from "@/features/agents/agent-drawer";
 import { useT } from "@/i18n";
 import { agentMeta } from "@/lib/agents";
 import type { AgentScan } from "@/lib/types";
-import { List, Plus, SlidersHorizontal, Sparkles } from "lucide-react";
+import { Info, List, Pencil, Plus, SlidersHorizontal, Sparkles, Trash2 } from "lucide-react";
 import { motion } from "motion/react";
 import { type ReactNode, useMemo, useState } from "react";
 import { AddMcpDialog } from "./add-mcp-dialog";
+import { DetailDialog, type DetailTarget } from "./detail-dialog";
 import { StatCards } from "./stat-cards";
 import { useMcpActions } from "./use-mcp-actions";
-import { useAgentScan } from "./use-mcps";
+import { useVisibleAgents } from "./use-mcps";
 
 interface Cell {
   status: Status;
@@ -47,6 +48,44 @@ function CellBody({
   );
 }
 
+/** Etiqueta de fila (nombre del MCP/skill) clicable → abre el modal de detalle. */
+function RowLabel({ name, tag, onInfo }: { name: string; tag: string; onInfo: () => void }) {
+  const t = useT();
+  return (
+    <button
+      type="button"
+      onClick={onInfo}
+      title={t("matrix.info")}
+      className="group flex flex-col gap-0.5 border-border border-r border-b p-4 text-left hover:bg-elevated-2"
+    >
+      <span className="flex items-center gap-1.5 text-foreground text-[13px]">
+        <span className="truncate">{name}</span>
+        <Info
+          size={12}
+          className="shrink-0 text-faint opacity-0 transition-opacity group-hover:opacity-100"
+        />
+      </span>
+      <span className="text-[10px] tracking-[0.08em] text-faint">{tag}</span>
+    </button>
+  );
+}
+
+/** Icono de acción en la esquina superior derecha de la celda (señal de qué hará el clic). */
+function CellIcon({ kind }: { kind: "remove" | "edit" }) {
+  const t = useT();
+  const cfg = {
+    remove: { Icon: Trash2, label: t("matrix.remove"), color: "group-hover:text-danger" },
+    edit: { Icon: Pencil, label: t("matrix.edit"), color: "group-hover:text-foreground" },
+  }[kind];
+  return (
+    <cfg.Icon
+      size={13}
+      aria-label={cfg.label}
+      className={`absolute top-4 right-4 text-faint transition-colors ${cfg.color}`}
+    />
+  );
+}
+
 /** Estado de un MCP en un agente, comparando su `target` con el resto de agentes. */
 function cellFor(agent: AgentScan, name: string, targetsByAgent: Map<string, string>): Cell {
   const mcp = agent.mcps.find((m) => m.name === name);
@@ -57,13 +96,36 @@ function cellFor(agent: AgentScan, name: string, targetsByAgent: Map<string, str
 }
 
 export function McpMatrix({ query }: { query: string }) {
-  const { agents, error, isLoading } = useAgentScan();
+  const { agents, total, error, isLoading } = useVisibleAgents();
   const actions = useMcpActions();
   const dialog = useDialog();
   const t = useT();
   const showVal = (v: string) => (v === "not set" ? t("matrix.notSet") : v);
   const [showAdd, setShowAdd] = useState(false);
+  const [detail, setDetail] = useState<DetailTarget | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  /** Abre el modal de detalle de un MCP (usa la config del primer agente que lo tiene). */
+  const openMcpDetail = (name: string) => {
+    const owners = agents.filter((a) => a.mcps.some((m) => m.name === name));
+    const mcp = owners[0]?.mcps.find((m) => m.name === name);
+    if (mcp)
+      setDetail({ kind: "mcp", agentId: owners[0].id, mcp, presentIn: owners.map((a) => a.id) });
+  };
+
+  /** Abre el modal de detalle de un skill (lee el SKILL.md del primer agente que lo tiene). */
+  const openSkillDetail = (name: string) => {
+    const owners = agents.filter((a) => a.skills.some((s) => s.name === name));
+    const skill = owners[0]?.skills.find((s) => s.name === name);
+    if (skill)
+      setDetail({
+        kind: "skill",
+        agentId: owners[0].id,
+        name,
+        description: skill.description,
+        presentIn: owners.map((a) => a.id),
+      });
+  };
   const agentIds = agents.map((a) => a.id);
   const selectedAgent = agents.find((a) => a.id === selectedId) ?? null;
 
@@ -134,6 +196,8 @@ export function McpMatrix({ query }: { query: string }) {
     return <p className="text-muted-foreground text-sm">{t("common.scanningAgents")}</p>;
   if (error)
     return <p className="text-danger text-sm">{t("common.scanError", { err: String(error) })}</p>;
+  if (agents.length === 0 && total > 0)
+    return <p className="text-warning text-sm">{t("visibility.allHidden")}</p>;
 
   const cols = `250px repeat(${agents.length}, minmax(0,1fr))`;
 
@@ -217,12 +281,11 @@ export function McpMatrix({ query }: { query: string }) {
 
           {rows.map((row) => (
             <div key={row.name} className="contents">
-              <div className="flex flex-col gap-0.5 border-border border-r border-b p-4">
-                <span className="text-foreground text-[13px]">{row.name}</span>
-                <span className="text-[10px] tracking-[0.08em] text-faint">
-                  {t("matrix.mcpTag")}
-                </span>
-              </div>
+              <RowLabel
+                name={row.name}
+                tag={t("matrix.mcpTag")}
+                onInfo={() => openMcpDetail(row.name)}
+              />
               {row.cells.map((cell, i) => {
                 const agent = agents[i];
                 const meta = agentMeta(agent.id);
@@ -262,10 +325,11 @@ export function McpMatrix({ query }: { query: string }) {
                     onClick={actionable ? onClick : undefined}
                     title={title}
                     disabled={actionable ? actions.busy : undefined}
-                    className={`flex min-w-0 flex-col gap-1.5 border-border border-r border-b p-4 text-left last:border-r-0 ${
+                    className={`group relative flex min-w-0 flex-col gap-1.5 border-border border-r border-b p-4 text-left last:border-r-0 ${
                       actionable ? "cursor-pointer hover:bg-elevated-2" : ""
                     }`}
                   >
+                    {installed && <CellIcon kind="remove" />}
                     <CellBody status={cell.status} changeKey={source ? "share" : cell.value}>
                       <div className="truncate text-muted-foreground text-xs">
                         {source ? t("matrix.shareHere") : showVal(cell.value)}
@@ -288,12 +352,11 @@ export function McpMatrix({ query }: { query: string }) {
 
           {skillRows.map((row) => (
             <div key={row.name} className="contents">
-              <div className="flex flex-col gap-0.5 border-border border-r border-b p-4">
-                <span className="text-foreground text-[13px]">{row.name}</span>
-                <span className="text-[10px] tracking-[0.08em] text-faint">
-                  {t("matrix.skillTag")}
-                </span>
-              </div>
+              <RowLabel
+                name={row.name}
+                tag={t("matrix.skillTag")}
+                onInfo={() => openSkillDetail(row.name)}
+              />
               {row.cells.map((cell, i) => {
                 const agent = agents[i];
                 const meta = agentMeta(agent.id);
@@ -333,10 +396,11 @@ export function McpMatrix({ query }: { query: string }) {
                           ? t("matrix.shareFrom", { agent: agentMeta(source.id).name })
                           : ""
                     }
-                    className={`flex min-w-0 flex-col gap-1.5 border-border border-r border-b p-4 text-left last:border-r-0 ${
+                    className={`group relative flex min-w-0 flex-col gap-1.5 border-border border-r border-b p-4 text-left last:border-r-0 ${
                       actionable ? "cursor-pointer hover:bg-elevated-2" : ""
                     }`}
                   >
+                    {installed && <CellIcon kind="remove" />}
                     <CellBody status={cell.status} changeKey={source ? "share" : cell.value}>
                       <div className="truncate text-muted-foreground text-xs">
                         {source ? t("matrix.shareHere") : showVal(cell.value)}
@@ -390,10 +454,11 @@ export function McpMatrix({ query }: { query: string }) {
                     onClick={editable ? onClick : undefined}
                     disabled={editable ? actions.busy : undefined}
                     title={editable ? t("matrix.editModel") : ""}
-                    className={`flex min-w-0 flex-col gap-1.5 border-border border-r border-b p-4 text-left last:border-r-0 ${
+                    className={`group relative flex min-w-0 flex-col gap-1.5 border-border border-r border-b p-4 text-left last:border-r-0 ${
                       editable ? "cursor-pointer hover:bg-elevated-2" : ""
                     }`}
                   >
+                    {editable && <CellIcon kind="edit" />}
                     <CellBody status={cell.status} changeKey={cell.value}>
                       <div className="truncate text-muted-foreground text-xs">
                         {showVal(cell.value)}
@@ -411,15 +476,16 @@ export function McpMatrix({ query }: { query: string }) {
 
       <p className="mt-3.5 font-sans text-faint text-xs">{t("matrix.hint")}</p>
 
-      {showAdd && (
-        <AddMcpDialog
-          agentIds={agentIds}
-          onClose={() => setShowAdd(false)}
-          onSubmit={(agentId, mcp) => actions.install(agentId, mcp)}
-        />
-      )}
+      <AddMcpDialog
+        open={showAdd}
+        agentIds={agentIds}
+        onClose={() => setShowAdd(false)}
+        onSubmit={(agentId, mcp) => actions.install(agentId, mcp)}
+      />
 
       {selectedAgent && <AgentDrawer agent={selectedAgent} onClose={() => setSelectedId(null)} />}
+
+      <DetailDialog target={detail} onClose={() => setDetail(null)} />
     </div>
   );
 }

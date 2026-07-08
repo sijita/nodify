@@ -6,6 +6,8 @@
 
 **One panel to rule the configuration of all your AI coding agents.**
 
+[![Latest release](https://img.shields.io/github/v/release/sijita/nodify?label=download&sort=semver)](https://github.com/sijita/nodify/releases/latest)
+&nbsp;·&nbsp;
 🌐 Léelo en [Español](README.md)
 
 </div>
@@ -25,6 +27,7 @@ and with a light/dark theme.
 
 ## Table of contents
 
+- [Download](#download)
 - [The problem](#the-problem)
 - [Key features](#key-features)
 - [Interface](#interface)
@@ -39,6 +42,27 @@ and with a light/dark theme.
 - [Roadmap](#roadmap)
 - [Conventions and contributing](#conventions-and-contributing)
 - [License](#license)
+
+---
+
+## Download
+
+Grab the installer for your system from the **[latest release](https://github.com/sijita/nodify/releases/latest)**:
+
+| System | File |
+| --- | --- |
+| **macOS** (Apple Silicon) | `Nodify_*_aarch64.dmg` |
+| **macOS** (Intel) | `Nodify_*_x64.dmg` |
+| **Windows** | `Nodify_*_x64-setup.exe` or `Nodify_*_x64_en-US.msi` |
+| **Linux** | `Nodify_*_amd64.AppImage`, `*_amd64.deb` or `*.x86_64.rpm` |
+
+> **First launch (unsigned app):** the installers aren't code-signed/notarized yet.
+> - **macOS:** if you see *“Nodify is damaged”*, remove the quarantine flag with
+>   `xattr -dr com.apple.quarantine /Applications/Nodify.app` and open it. (On Apple Silicon,
+>   *right-click → Open* does not fix that specific message.)
+> - **Windows:** SmartScreen → *More info → Run anyway*.
+
+Prefer to build it yourself? See [Installation](#installation).
 
 ---
 
