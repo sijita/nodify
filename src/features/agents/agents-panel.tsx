@@ -1,3 +1,4 @@
+import { AgentGlyph } from "@/components/agent-glyph";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -164,7 +165,7 @@ export function AgentsPanel() {
               key={plan.target.id}
               plan={plan}
               index={i}
-              sourceBadge={agentMeta(source.id).badge}
+              sourceId={source.id}
               busy={busy === plan.target.id}
               disabled={!!busy}
               onAlign={() => align(plan)}
@@ -217,13 +218,14 @@ function SourceHero({
               key={a.id}
               type="button"
               onClick={() => onPick(a.id)}
-              className={`rounded-[var(--radius-sm)] border px-2.5 py-1 font-mono text-[11px] tracking-[0.06em] transition-colors ${
+              className={`flex items-center gap-1.5 rounded-[var(--radius-sm)] border px-2.5 py-1 font-mono text-[11px] tracking-[0.06em] transition-colors ${
                 active
                   ? "border-primary bg-primary text-primary-foreground"
                   : "border-border bg-surface text-muted-foreground hover:border-border-strong hover:text-foreground"
               }`}
             >
-              {agentMeta(a.id).badge}
+              <AgentGlyph id={a.id} size={13} />
+              {agentMeta(a.id).name}
             </button>
           );
         })}
@@ -232,7 +234,7 @@ function SourceHero({
       {/* cuerpo: identidad de la fuente + inventario */}
       <div className="flex flex-wrap items-center gap-4 px-4 py-4">
         <Badge variant="avatar" className="h-11 w-11 text-sm">
-          {meta.badge}
+          <AgentGlyph id={source.id} size={24} />
         </Badge>
         <div className="min-w-0 flex-1">
           <div className="font-semibold text-[15px]">{meta.name}</div>
@@ -320,14 +322,14 @@ function rowsOf(plan: Plan): Row[] {
 function DiffPanel({
   plan,
   index,
-  sourceBadge,
+  sourceId,
   busy,
   disabled,
   onAlign,
 }: {
   plan: Plan;
   index: number;
-  sourceBadge: string;
+  sourceId: string;
   busy: boolean;
   disabled: boolean;
   onAlign: () => void;
@@ -349,7 +351,7 @@ function DiffPanel({
         <div className="flex items-center justify-between gap-2 border-border border-b bg-elevated px-3.5 py-2.5">
           <div className="flex items-center gap-2 font-mono text-[11px]">
             <span className="flex h-6 w-6 items-center justify-center rounded-[var(--radius-sm)] border border-border-strong bg-surface font-semibold text-[10px]">
-              {sourceBadge}
+              <AgentGlyph id={sourceId} size={13} />
             </span>
             <motion.span
               className="text-faint"
@@ -360,7 +362,7 @@ function DiffPanel({
               ──▶
             </motion.span>
             <span className="flex h-6 w-6 items-center justify-center rounded-[var(--radius-sm)] border border-border-strong bg-surface font-semibold text-[10px]">
-              {meta.badge}
+              <AgentGlyph id={plan.target.id} size={13} />
             </span>
             <span className="ml-1 font-semibold font-sans text-[13px]">{meta.name}</span>
           </div>
