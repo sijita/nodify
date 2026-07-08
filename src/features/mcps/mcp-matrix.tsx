@@ -474,13 +474,12 @@ export function McpMatrix({ query }: { query: string }) {
 
       <p className="mt-3.5 font-sans text-faint text-xs">{t("matrix.hint")}</p>
 
-      {showAdd && (
-        <AddMcpDialog
-          agentIds={agentIds}
-          onClose={() => setShowAdd(false)}
-          onSubmit={(agentId, mcp) => actions.install(agentId, mcp)}
-        />
-      )}
+      <AddMcpDialog
+        open={showAdd}
+        agentIds={agentIds}
+        onClose={() => setShowAdd(false)}
+        onSubmit={(agentId, mcp) => actions.install(agentId, mcp)}
+      />
 
       {selectedAgent && <AgentDrawer agent={selectedAgent} onClose={() => setSelectedId(null)} />}
 
