@@ -14,6 +14,13 @@ export const es: Dict = {
     changeTheme: "Cambiar tema",
     changeLang: "Cambiar idioma",
   },
+  visibility: {
+    button: "Agentes visibles",
+    title: "MOSTRAR / OCULTAR AGENTES",
+    hint: "Ocultar un agente solo lo quita de la vista — Nodify sigue leyendo y escribiendo su config con normalidad.",
+    allHidden:
+      "> todos los agentes están ocultos — usa el icono del ojo en la barra superior para mostrar alguno",
+  },
   topbar: {
     scan: "SCAN",
     scanning: "SCANEANDO",

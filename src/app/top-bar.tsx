@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { useLocale, useT } from "@/i18n";
 import { Moon, RefreshCw, Search, Sun } from "lucide-react";
 import { motion } from "motion/react";
+import { AgentVisibilityMenu } from "./agent-visibility-menu";
 import { Logo } from "./logo";
 import { useTheme } from "./theme-store";
 
@@ -36,6 +37,8 @@ export function TopBar({ query, onQuery, onScan, scanning }: Props) {
             className="h-9 w-[150px] px-0"
           />
         </div>
+
+        <AgentVisibilityMenu />
 
         <Button
           variant="outline"

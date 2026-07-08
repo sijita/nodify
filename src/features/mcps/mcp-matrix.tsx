@@ -14,7 +14,7 @@ import { AddMcpDialog } from "./add-mcp-dialog";
 import { DetailDialog, type DetailTarget } from "./detail-dialog";
 import { StatCards } from "./stat-cards";
 import { useMcpActions } from "./use-mcp-actions";
-import { useAgentScan } from "./use-mcps";
+import { useVisibleAgents } from "./use-mcps";
 
 interface Cell {
   status: Status;
@@ -96,7 +96,7 @@ function cellFor(agent: AgentScan, name: string, targetsByAgent: Map<string, str
 }
 
 export function McpMatrix({ query }: { query: string }) {
-  const { agents, error, isLoading } = useAgentScan();
+  const { agents, total, error, isLoading } = useVisibleAgents();
   const actions = useMcpActions();
   const dialog = useDialog();
   const t = useT();
@@ -196,6 +196,8 @@ export function McpMatrix({ query }: { query: string }) {
     return <p className="text-muted-foreground text-sm">{t("common.scanningAgents")}</p>;
   if (error)
     return <p className="text-danger text-sm">{t("common.scanError", { err: String(error) })}</p>;
+  if (agents.length === 0 && total > 0)
+    return <p className="text-warning text-sm">{t("visibility.allHidden")}</p>;
 
   const cols = `250px repeat(${agents.length}, minmax(0,1fr))`;
 

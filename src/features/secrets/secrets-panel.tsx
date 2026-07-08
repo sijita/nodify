@@ -10,7 +10,7 @@ import type { ProviderInfo } from "@/lib/types";
 import { KeyRound } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { mutate } from "swr";
-import { useAgentScan } from "../mcps/use-mcps";
+import { useVisibleAgents } from "../mcps/use-mcps";
 
 /**
  * Vista SECRETS (compact): agrega los **nombres** de env var referenciados en el
@@ -19,7 +19,7 @@ import { useAgentScan } from "../mcps/use-mcps";
  * leen del shell. Sin almacén propio (ADR-0002/0004): el valor solo va a los archivos.
  */
 export function SecretsPanel() {
-  const { agents } = useAgentScan();
+  const { agents } = useVisibleAgents();
   const t = useT();
   const [providers, setProviders] = useState<Record<string, ProviderInfo[]>>({});
   const [values, setValues] = useState<Record<string, string>>({});

@@ -12,6 +12,12 @@ export const en = {
     changeTheme: "Toggle theme",
     changeLang: "Switch language",
   },
+  visibility: {
+    button: "Agents shown",
+    title: "SHOW / HIDE AGENTS",
+    hint: "Hidden agents are only tucked away from view — Nodify keeps reading and writing their config normally.",
+    allHidden: "> all agents are hidden — use the eye icon in the top bar to show one",
+  },
   topbar: {
     scan: "SCAN",
     scanning: "SCANNING",
