@@ -143,7 +143,7 @@ export const es: Dict = {
   secrets: {
     title: "SECRETOS",
     intro:
-      "Variables de entorno referenciadas por MCPs y proveedores. El valor se escribe en Claude (settings.env); Codex/OpenCode las leen del shell o auth.json. Nodify no guarda el valor (ADR-0004).",
+      "Variables de entorno referenciadas por MCPs y proveedores. El valor se escribe en Claude (settings.env); Codex/OpenCode las leen del shell o auth.json. Nodify no guarda el valor.",
     none: "> sin variables referenciadas",
     value: "valor…",
     setClaude: "set Claude",
@@ -152,7 +152,7 @@ export const es: Dict = {
   sync: {
     title: "SYNC",
     intro:
-      "Bundle canónico portable, sin valores de secretos (solo referencias). Push/Pull manual contra un repo de GitHub, con diff previo. Ver ADR-0006.",
+      "Bundle canónico portable, sin valores de secretos (solo referencias). Push/Pull manual contra un repo de GitHub, con diff previo.",
     bundle: "BUNDLE",
     regenerate: "regenerar",
     repository: "REPOSITORIO",
@@ -177,7 +177,7 @@ export const es: Dict = {
     mcps: "MCPS ({n})",
     skills: "SKILLS ({n})",
     providersIntro:
-      "Proveedores definidos en la config. Las API keys no se muestran: solo el nombre de la variable de entorno que las aporta (ADR-0004).",
+      "Proveedores definidos en la config. Las API keys no se muestran: solo el nombre de la variable de entorno que las aporta.",
     noProviders: "> este agente no declara proveedores en archivo (usa env vars).",
     key: "key:",
     rulesPlaceholder: "# Reglas del agente…",

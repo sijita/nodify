@@ -141,7 +141,7 @@ export const en = {
   secrets: {
     title: "SECRETS",
     intro:
-      "Environment variables referenced by MCPs and providers. The value is written to Claude (settings.env); Codex/OpenCode read them from the shell or auth.json. Nodify does not store the value (ADR-0004).",
+      "Environment variables referenced by MCPs and providers. The value is written to Claude (settings.env); Codex/OpenCode read them from the shell or auth.json. Nodify does not store the value.",
     none: "> no referenced variables",
     value: "value…",
     setClaude: "set Claude",
@@ -150,7 +150,7 @@ export const en = {
   sync: {
     title: "SYNC",
     intro:
-      "Portable canonical bundle, with no secret values (references only). Manual push/pull against a GitHub repo, with a preview diff. See ADR-0006.",
+      "Portable canonical bundle, with no secret values (references only). Manual push/pull against a GitHub repo, with a preview diff.",
     bundle: "BUNDLE",
     regenerate: "regenerate",
     repository: "REPOSITORY",
@@ -175,7 +175,7 @@ export const en = {
     mcps: "MCPS ({n})",
     skills: "SKILLS ({n})",
     providersIntro:
-      "Providers defined in the config. API keys are not shown: only the name of the environment variable that supplies them (ADR-0004).",
+      "Providers defined in the config. API keys are not shown: only the name of the environment variable that supplies them.",
     noProviders: "> this agent declares no providers in file (uses env vars).",
     key: "key:",
     rulesPlaceholder: "# Agent rules…",
