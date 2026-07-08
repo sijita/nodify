@@ -2,6 +2,7 @@ import { AgentsPanel } from "@/features/agents/agents-panel";
 import { McpMatrix } from "@/features/mcps/mcp-matrix";
 import { SecretsPanel } from "@/features/secrets/secrets-panel";
 import { SyncPanel } from "@/features/sync/sync-panel";
+import { useT } from "@/i18n";
 import { isTauri } from "@/lib/tauri";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
@@ -14,6 +15,7 @@ export function App() {
   const [query, setQuery] = useState("");
   const [scanning, setScanning] = useState(false);
   const section = useNav((s) => s.active);
+  const t = useT();
 
   const onScan = async () => {
     setScanning(true);
@@ -32,7 +34,7 @@ export function App() {
           <TopBar query={query} onQuery={setQuery} onScan={onScan} scanning={scanning} />
           {!isTauri() && (
             <div className="mb-4 border border-warning/40 bg-warning/5 px-3 py-2 text-warning text-xs">
-              {"> preview en navegador · datos DEMO (el backend real solo corre en la app nativa)"}
+              {t("topbar.browserDemo")}
             </div>
           )}
 

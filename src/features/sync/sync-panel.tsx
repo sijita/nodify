@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useT } from "@/i18n";
 import { exportBundle, isTauri, syncPull, syncPush, syncStatus } from "@/lib/tauri";
 import type { DiffEntry } from "@/lib/types";
 import { Check, Download, GitPullRequestArrow, Upload } from "lucide-react";
@@ -13,6 +14,7 @@ import { mutate } from "swr";
  */
 export function SyncPanel() {
   const native = isTauri();
+  const t = useT();
   const [bundle, setBundle] = useState("");
   const [repo, setRepo] = useState("");
   const [diff, setDiff] = useState<DiffEntry[] | null>(null);
@@ -32,7 +34,7 @@ export function SyncPanel() {
       await fn();
       setMsg(ok);
     } catch (e) {
-      setMsg(`error: ${e instanceof Error ? e.message : String(e)}`);
+      setMsg(t("common.error", { err: e instanceof Error ? e.message : String(e) }));
     } finally {
       setBusy(false);
     }
@@ -40,15 +42,14 @@ export function SyncPanel() {
 
   return (
     <div className="mx-auto max-w-[1180px]">
-      <h1 className="mb-1 font-semibold text-sm tracking-[0.08em]">SYNC</h1>
-      <p className="mb-5 font-sans text-muted-foreground text-xs">
-        Bundle canónico portable, <strong>sin valores de secretos</strong> (solo referencias).
-        Push/Pull manual contra un repo de GitHub, con diff previo. Ver ADR-0006.
-      </p>
+      <h1 className="mb-1 font-semibold text-sm tracking-[0.08em]">{t("sync.title")}</h1>
+      <p className="mb-5 font-sans text-muted-foreground text-xs">{t("sync.intro")}</p>
 
       <Card className="mb-4 p-4">
         <div className="mb-2 flex items-center justify-between">
-          <span className="text-[10px] tracking-[0.16em] text-muted-foreground">BUNDLE</span>
+          <span className="text-[10px] tracking-[0.16em] text-muted-foreground">
+            {t("sync.bundle")}
+          </span>
           <Button
             variant="ghost"
             size="sm"
@@ -56,7 +57,7 @@ export function SyncPanel() {
             disabled={busy}
           >
             <Download size={13} />
-            regenerar
+            {t("sync.regenerate")}
           </Button>
         </div>
         <pre className="max-h-72 overflow-auto rounded-[var(--radius-sm)] border border-border bg-surface p-3 text-[11px] text-muted-foreground leading-relaxed">
@@ -65,11 +66,13 @@ export function SyncPanel() {
       </Card>
 
       <Card className="p-4">
-        <div className="mb-3 text-[10px] tracking-[0.16em] text-muted-foreground">REPOSITORIO</div>
+        <div className="mb-3 text-[10px] tracking-[0.16em] text-muted-foreground">
+          {t("sync.repository")}
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           <Input
             className="min-w-[240px] flex-1 border border-border bg-surface px-3 py-2 rounded-[var(--radius-sm)]"
-            placeholder="/ruta/a/tu/repo-git"
+            placeholder={t("sync.repoPlaceholder")}
             value={repo}
             onChange={(e) => setRepo(e.target.value)}
           />
@@ -77,19 +80,19 @@ export function SyncPanel() {
             variant="outline"
             size="sm"
             disabled={!native || !repo || busy}
-            onClick={() => run(() => syncStatus(repo).then(setDiff), "diff calculado")}
+            onClick={() => run(() => syncStatus(repo).then(setDiff), t("sync.diffOk"))}
           >
             <GitPullRequestArrow size={13} />
-            diff
+            {t("sync.diff")}
           </Button>
           <Button
             variant="outline"
             size="sm"
             disabled={!native || !repo || busy}
-            onClick={() => run(() => syncPush(repo), "push OK")}
+            onClick={() => run(() => syncPush(repo), t("sync.pushOk"))}
           >
             <Upload size={13} />
-            push
+            {t("sync.push")}
           </Button>
           <Button
             variant="accent"
@@ -99,28 +102,24 @@ export function SyncPanel() {
               run(async () => {
                 await syncPull(repo);
                 await mutate("scan-agents");
-              }, "pull aplicado")
+              }, t("sync.pullOk"))
             }
           >
             <Check size={13} />
-            pull + aplicar
+            {t("sync.pullApply")}
           </Button>
         </div>
 
-        {!native && (
-          <p className="mt-3 text-warning text-xs">
-            {"> push/pull requieren la app nativa + git; el bundle sí se puede exportar aquí."}
-          </p>
-        )}
+        {!native && <p className="mt-3 text-warning text-xs">{t("sync.nativeOnly")}</p>}
         {msg && <p className="mt-3 text-muted-foreground text-xs">{`> ${msg}`}</p>}
 
         {diff && (
           <div className="mt-4">
             <div className="mb-2 text-[10px] tracking-[0.16em] text-muted-foreground">
-              CAMBIOS AL APLICAR ({diff.length})
+              {t("sync.changesOnApply", { n: diff.length })}
             </div>
             {diff.length === 0 ? (
-              <p className="text-faint text-xs">{"> sin cambios (todo al día)"}</p>
+              <p className="text-faint text-xs">{t("sync.noChanges")}</p>
             ) : (
               <ul className="flex flex-col gap-1 font-mono text-xs">
                 {diff.map((d) => (

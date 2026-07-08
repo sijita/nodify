@@ -1,3 +1,4 @@
+import { useT } from "@/i18n";
 import { cn } from "@/lib/utils";
 import { type VariantProps, cva } from "class-variance-authority";
 
@@ -9,13 +10,6 @@ const GLYPH: Record<Status, string> = {
   missing: "–",
   differs: "≠",
   error: "✕",
-};
-
-const LABEL: Record<Status, string> = {
-  installed: "INSTALLED",
-  missing: "MISSING",
-  differs: "DIFFERS",
-  error: "ERROR",
 };
 
 const indicator = cva("font-mono", {
@@ -38,6 +32,7 @@ interface Props extends VariantProps<typeof indicator> {
 }
 
 export function StatusIndicator({ status, variant = "label", className }: Props) {
+  const t = useT();
   if (variant === "glyph") {
     return (
       <span className={cn(indicator({ status }), "w-4 text-center text-sm", className)}>
@@ -49,7 +44,7 @@ export function StatusIndicator({ status, variant = "label", className }: Props)
     <span className={cn("inline-flex items-center gap-2", className)}>
       <span className={cn(indicator({ status }), "w-4 text-center text-sm")}>{GLYPH[status]}</span>
       <span className={cn(indicator({ status }), "text-[10px] font-medium tracking-[0.1em]")}>
-        {LABEL[status]}
+        {t(`status.${status}`)}
       </span>
     </span>
   );

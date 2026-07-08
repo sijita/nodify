@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/i18n";
 import { agentMeta } from "@/lib/agents";
 import { listProviders, readRules, writeRules } from "@/lib/tauri";
 import type { AgentScan, ProviderInfo } from "@/lib/types";
@@ -12,7 +13,13 @@ type Tab = "overview" | "providers" | "rules";
 /** Panel de detalle deslizante por agente (drawer del mockup). */
 export function AgentDrawer({ agent, onClose }: { agent: AgentScan; onClose: () => void }) {
   const meta = agentMeta(agent.id);
+  const t = useT();
   const [tab, setTab] = useState<Tab>("overview");
+  const tabLabel: Record<Tab, string> = {
+    overview: t("agent.tabOverview"),
+    providers: t("agent.tabProviders"),
+    rules: t("agent.tabRules"),
+  };
 
   return (
     <>
@@ -36,7 +43,7 @@ export function AgentDrawer({ agent, onClose }: { agent: AgentScan; onClose: () 
               <div>
                 <div className="font-semibold text-[17px]">{meta.name}</div>
                 <div className="text-muted-foreground text-xs">
-                  {agent.detected ? "detectado" : "no detectado"}
+                  {agent.detected ? t("agent.detected") : t("agent.notDetected")}
                 </div>
               </div>
             </div>
@@ -50,18 +57,18 @@ export function AgentDrawer({ agent, onClose }: { agent: AgentScan; onClose: () 
         </header>
 
         <nav className="flex border-border border-b px-6">
-          {(["overview", "providers", "rules"] as Tab[]).map((t) => (
+          {(["overview", "providers", "rules"] as Tab[]).map((tb) => (
             <button
-              key={t}
+              key={tb}
               type="button"
-              onClick={() => setTab(t)}
+              onClick={() => setTab(tb)}
               className={`border-b-2 px-4 py-3.5 font-mono text-[11px] tracking-[0.12em] uppercase ${
-                tab === t
+                tab === tb
                   ? "border-primary text-foreground"
                   : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
-              {t}
+              {tabLabel[tb]}
             </button>
           ))}
         </nav>
@@ -86,12 +93,13 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function Overview({ agent }: { agent: AgentScan }) {
+  const t = useT();
   return (
     <>
-      <Section title="MODELO">
-        <div className="text-sm">{agent.config.model ?? "not set"}</div>
+      <Section title={t("agent.model")}>
+        <div className="text-sm">{agent.config.model ?? t("matrix.notSet")}</div>
       </Section>
-      <Section title={`MCPS (${agent.mcps.length})`}>
+      <Section title={t("agent.mcps", { n: agent.mcps.length })}>
         <ul className="flex flex-col gap-1 text-xs">
           {agent.mcps.map((m) => (
             <li key={m.name} className="flex justify-between gap-3">
@@ -102,7 +110,7 @@ function Overview({ agent }: { agent: AgentScan }) {
           {agent.mcps.length === 0 && <li className="text-faint">—</li>}
         </ul>
       </Section>
-      <Section title={`SKILLS (${agent.skills.length})`}>
+      <Section title={t("agent.skills", { n: agent.skills.length })}>
         <ul className="flex flex-col gap-1 text-xs">
           {agent.skills.map((s) => (
             <li key={s.name}>{s.name}</li>
@@ -115,6 +123,7 @@ function Overview({ agent }: { agent: AgentScan }) {
 }
 
 function ProvidersTab({ agentId }: { agentId: string }) {
+  const t = useT();
   const [providers, setProviders] = useState<ProviderInfo[] | null>(null);
 
   useEffect(() => {
@@ -123,18 +132,13 @@ function ProvidersTab({ agentId }: { agentId: string }) {
       .catch(() => setProviders([]));
   }, [agentId]);
 
-  if (!providers) return <p className="text-faint text-xs">{"> cargando…"}</p>;
+  if (!providers) return <p className="text-faint text-xs">{t("common.loading")}</p>;
 
   return (
     <>
-      <p className="mb-4 font-sans text-muted-foreground text-xs">
-        Proveedores definidos en la config. Las API keys <strong>no se muestran</strong>: solo el
-        nombre de la variable de entorno que las aporta (ADR-0004).
-      </p>
+      <p className="mb-4 font-sans text-muted-foreground text-xs">{t("agent.providersIntro")}</p>
       {providers.length === 0 ? (
-        <p className="text-faint text-xs">
-          {"> este agente no declara proveedores en archivo (usa env vars)."}
-        </p>
+        <p className="text-faint text-xs">{t("agent.noProviders")}</p>
       ) : (
         <ul className="flex flex-col gap-3">
           {providers.map((p) => (
@@ -143,7 +147,7 @@ function ProvidersTab({ agentId }: { agentId: string }) {
               {p.baseUrl && <div className="mt-1 truncate text-faint text-xs">{p.baseUrl}</div>}
               {p.keyEnv && (
                 <div className="mt-1 text-muted-foreground text-xs">
-                  key: <span className="text-warning">${`{${p.keyEnv}}`}</span>
+                  {t("agent.key")} <span className="text-warning">${`{${p.keyEnv}}`}</span>
                 </div>
               )}
             </li>
@@ -155,6 +159,7 @@ function ProvidersTab({ agentId }: { agentId: string }) {
 }
 
 function RulesTab({ agentId }: { agentId: string }) {
+  const t = useT();
   const [content, setContent] = useState("");
   const [loaded, setLoaded] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
@@ -173,9 +178,9 @@ function RulesTab({ agentId }: { agentId: string }) {
     try {
       await writeRules(agentId, content);
       await mutate("scan-agents");
-      setMsg("guardado");
+      setMsg(t("agent.saved"));
     } catch (e) {
-      setMsg(`error: ${e instanceof Error ? e.message : String(e)}`);
+      setMsg(t("common.error", { err: e instanceof Error ? e.message : String(e) }));
     }
   };
 
@@ -186,14 +191,14 @@ function RulesTab({ agentId }: { agentId: string }) {
         onChange={(e) => setContent(e.target.value)}
         disabled={!loaded}
         spellCheck={false}
-        placeholder="# Reglas del agente…"
+        placeholder={t("agent.rulesPlaceholder")}
         className="min-h-64 flex-1 resize-none border border-border bg-surface p-3 font-mono text-muted-foreground text-xs leading-relaxed outline-none rounded-[var(--radius-sm)]"
       />
       <div className="mt-3 flex items-center justify-between">
         <span className="text-faint text-xs">{msg ? `> ${msg}` : ""}</span>
         <Button variant="accent" size="sm" onClick={save} disabled={!loaded}>
           <Save size={13} />
-          guardar
+          {t("agent.saveRules")}
         </Button>
       </div>
     </div>

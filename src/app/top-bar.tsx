@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useLocale, useT } from "@/i18n";
 import { Moon, RefreshCw, Search, Sun } from "lucide-react";
 import { motion } from "motion/react";
 import { Logo } from "./logo";
@@ -14,12 +15,14 @@ interface Props {
 
 export function TopBar({ query, onQuery, onScan, scanning }: Props) {
   const { theme, toggle } = useTheme();
+  const t = useT();
+  const { locale, toggle: toggleLocale } = useLocale();
   return (
     <div className="mb-6 flex flex-wrap items-center justify-between gap-5">
       <div className="flex items-center gap-3">
         <Logo className="h-8 w-auto shrink-0 object-contain" />
         <span className="font-bold text-[22px] tracking-[0.14em]">NODIFY</span>
-        <span className="font-sans text-muted-foreground text-xs">agent control center</span>
+        <span className="font-sans text-muted-foreground text-xs">{t("topbar.tagline")}</span>
       </div>
 
       <div className="flex items-center gap-2.5">
@@ -28,12 +31,22 @@ export function TopBar({ query, onQuery, onScan, scanning }: Props) {
           <Input
             value={query}
             onChange={(e) => onQuery(e.target.value)}
-            placeholder="filter config…"
+            placeholder={t("topbar.filter")}
             className="w-[150px] py-2.5"
           />
         </div>
 
-        <Button variant="outline" size="icon" onClick={toggle} aria-label="Cambiar tema">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={toggleLocale}
+          aria-label={t("common.changeLang")}
+          className="font-mono text-[11px] tracking-[0.08em]"
+        >
+          {locale === "es" ? "ES" : "EN"}
+        </Button>
+
+        <Button variant="outline" size="icon" onClick={toggle} aria-label={t("common.changeTheme")}>
           {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
         </Button>
 
@@ -50,7 +63,7 @@ export function TopBar({ query, onQuery, onScan, scanning }: Props) {
             >
               <RefreshCw size={14} />
             </motion.span>
-            {scanning ? "SCANNING" : "SCAN"}
+            {scanning ? t("topbar.scanning") : t("topbar.scan")}
           </Button>
         </motion.div>
       </div>

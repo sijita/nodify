@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { useDialog } from "@/components/ui/dialog";
 import { type Status, StatusIndicator } from "@/components/ui/status-indicator";
 import { AgentDrawer } from "@/features/agents/agent-drawer";
+import { useT } from "@/i18n";
 import { agentMeta } from "@/lib/agents";
 import type { AgentScan } from "@/lib/types";
 import { List, Plus, SlidersHorizontal, Sparkles } from "lucide-react";
@@ -58,6 +59,8 @@ export function McpMatrix({ query }: { query: string }) {
   const { agents, error, isLoading } = useAgentScan();
   const actions = useMcpActions();
   const dialog = useDialog();
+  const t = useT();
+  const showVal = (v: string) => (v === "not set" ? t("matrix.notSet") : v);
   const [showAdd, setShowAdd] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const agentIds = agents.map((a) => a.id);
@@ -126,9 +129,10 @@ export function McpMatrix({ query }: { query: string }) {
     return { rows, skillRows, configRows, stats };
   }, [agents, query]);
 
-  if (isLoading) return <p className="text-muted-foreground text-sm">{"> escaneando agentes…"}</p>;
+  if (isLoading)
+    return <p className="text-muted-foreground text-sm">{t("common.scanningAgents")}</p>;
   if (error)
-    return <p className="text-danger text-sm">{`> error al escanear: ${String(error)}`}</p>;
+    return <p className="text-danger text-sm">{t("common.scanError", { err: String(error) })}</p>;
 
   const cols = `250px repeat(${agents.length}, minmax(0,1fr))`;
 
@@ -148,7 +152,7 @@ export function McpMatrix({ query }: { query: string }) {
           {/* esquina + header-cards de agente */}
           <div className="flex flex-col justify-end border-border border-r border-b bg-elevated p-4">
             <span className="text-[10px] tracking-[0.12em] text-faint">
-              CONFIG&nbsp;&nbsp;×&nbsp;&nbsp;AGENT
+              {t("matrix.configAgent")}
             </span>
           </div>
           {agents.map((a) => {
@@ -159,7 +163,7 @@ export function McpMatrix({ query }: { query: string }) {
                 key={a.id}
                 type="button"
                 onClick={() => setSelectedId(a.id)}
-                title={`Ver detalle de ${meta.name}`}
+                title={t("matrix.viewDetail", { agent: meta.name })}
                 className="cursor-pointer border-border border-r border-b bg-elevated p-4 text-left last:border-r-0 hover:bg-elevated-2"
               >
                 <div className="flex items-center gap-3">
@@ -169,7 +173,7 @@ export function McpMatrix({ query }: { query: string }) {
                   <div className="min-w-0">
                     <div className="truncate font-semibold text-sm">{meta.name}</div>
                     <div className="text-muted-foreground text-xs">
-                      {a.detected ? "detectado" : "no detectado"}
+                      {a.detected ? t("matrix.detected") : t("matrix.notDetected")}
                     </div>
                   </div>
                 </div>
@@ -188,7 +192,7 @@ export function McpMatrix({ query }: { query: string }) {
           <div className="col-span-full flex items-center justify-between border-border border-b bg-elevated px-4 py-2">
             <span className="flex items-center gap-2.5 font-semibold text-[11px] tracking-[0.16em] text-muted-foreground">
               <List size={14} />
-              MCP SERVERS
+              {t("matrix.mcpServers")}
             </span>
             <div className="flex items-center gap-3">
               <span className="text-[11px] text-faint">{rows.length}</span>
@@ -206,7 +210,7 @@ export function McpMatrix({ query }: { query: string }) {
 
           {rows.length === 0 && (
             <div className="col-span-full px-4 py-6 text-center text-faint text-xs">
-              {"> sin MCPs detectados"}
+              {t("matrix.noMcps")}
             </div>
           )}
 
@@ -214,7 +218,9 @@ export function McpMatrix({ query }: { query: string }) {
             <div key={row.name} className="contents">
               <div className="flex flex-col gap-0.5 border-border border-r border-b p-4">
                 <span className="text-foreground text-[13px]">{row.name}</span>
-                <span className="text-[10px] tracking-[0.08em] text-faint">mcp</span>
+                <span className="text-[10px] tracking-[0.08em] text-faint">
+                  {t("matrix.mcpTag")}
+                </span>
               </div>
               {row.cells.map((cell, i) => {
                 const agent = agents[i];
@@ -230,9 +236,9 @@ export function McpMatrix({ query }: { query: string }) {
                 const onClick = async () => {
                   if (installed) {
                     const ok = await dialog.confirm({
-                      title: "Eliminar MCP",
-                      message: `¿Eliminar "${row.name}" de ${meta.name}?`,
-                      confirmLabel: "Eliminar",
+                      title: t("matrix.deleteMcpTitle"),
+                      message: t("matrix.deleteMcpMsg", { name: row.name, agent: meta.name }),
+                      confirmLabel: t("common.delete"),
                       danger: true,
                     });
                     if (ok) actions.remove(agent.id, row.name);
@@ -242,9 +248,9 @@ export function McpMatrix({ query }: { query: string }) {
                 };
 
                 const title = installed
-                  ? `Eliminar de ${meta.name}`
+                  ? t("matrix.removeFrom", { agent: meta.name })
                   : source
-                    ? `Compartir desde ${agentMeta(source.id).name}`
+                    ? t("matrix.shareFrom", { agent: agentMeta(source.id).name })
                     : "";
                 const Tag = actionable ? "button" : "div";
 
@@ -261,7 +267,7 @@ export function McpMatrix({ query }: { query: string }) {
                   >
                     <CellBody status={cell.status} changeKey={source ? "share" : cell.value}>
                       <div className="truncate text-muted-foreground text-xs">
-                        {source ? "+ compartir aquí" : cell.value}
+                        {source ? t("matrix.shareHere") : showVal(cell.value)}
                       </div>
                     </CellBody>
                   </Tag>
@@ -274,7 +280,7 @@ export function McpMatrix({ query }: { query: string }) {
           <div className="col-span-full flex items-center justify-between border-border border-b bg-elevated px-4 py-2">
             <span className="flex items-center gap-2.5 font-semibold text-[11px] tracking-[0.16em] text-muted-foreground">
               <Sparkles size={14} />
-              SKILLS
+              {t("matrix.skills")}
             </span>
             <span className="text-[11px] text-faint">{skillRows.length}</span>
           </div>
@@ -283,7 +289,9 @@ export function McpMatrix({ query }: { query: string }) {
             <div key={row.name} className="contents">
               <div className="flex flex-col gap-0.5 border-border border-r border-b p-4">
                 <span className="text-foreground text-[13px]">{row.name}</span>
-                <span className="text-[10px] tracking-[0.08em] text-faint">skill</span>
+                <span className="text-[10px] tracking-[0.08em] text-faint">
+                  {t("matrix.skillTag")}
+                </span>
               </div>
               {row.cells.map((cell, i) => {
                 const agent = agents[i];
@@ -299,9 +307,9 @@ export function McpMatrix({ query }: { query: string }) {
                 const onClick = async () => {
                   if (installed) {
                     const ok = await dialog.confirm({
-                      title: "Eliminar skill",
-                      message: `¿Eliminar skill "${row.name}" de ${meta.name}?`,
-                      confirmLabel: "Eliminar",
+                      title: t("matrix.deleteSkillTitle"),
+                      message: t("matrix.deleteSkillMsg", { name: row.name, agent: meta.name }),
+                      confirmLabel: t("common.delete"),
                       danger: true,
                     });
                     if (ok) actions.removeSkill(agent.id, row.name);
@@ -319,9 +327,9 @@ export function McpMatrix({ query }: { query: string }) {
                     disabled={actionable ? actions.busy : undefined}
                     title={
                       installed
-                        ? `Eliminar de ${meta.name}`
+                        ? t("matrix.removeFrom", { agent: meta.name })
                         : source
-                          ? `Compartir desde ${agentMeta(source.id).name}`
+                          ? t("matrix.shareFrom", { agent: agentMeta(source.id).name })
                           : ""
                     }
                     className={`flex min-w-0 flex-col gap-1.5 border-border border-r border-b p-4 text-left last:border-r-0 ${
@@ -330,7 +338,7 @@ export function McpMatrix({ query }: { query: string }) {
                   >
                     <CellBody status={cell.status} changeKey={source ? "share" : cell.value}>
                       <div className="truncate text-muted-foreground text-xs">
-                        {source ? "+ compartir aquí" : cell.value}
+                        {source ? t("matrix.shareHere") : showVal(cell.value)}
                       </div>
                     </CellBody>
                   </Tag>
@@ -343,7 +351,7 @@ export function McpMatrix({ query }: { query: string }) {
           <div className="col-span-full flex items-center justify-between border-border border-b bg-elevated px-4 py-2">
             <span className="flex items-center gap-2.5 font-semibold text-[11px] tracking-[0.16em] text-muted-foreground">
               <SlidersHorizontal size={14} />
-              CONFIG
+              {t("matrix.config")}
             </span>
             <span className="text-[11px] text-faint">{configRows.length}</span>
           </div>
@@ -351,8 +359,12 @@ export function McpMatrix({ query }: { query: string }) {
           {configRows.map((row) => (
             <div key={row.name} className="contents">
               <div className="flex flex-col gap-0.5 border-border border-r border-b p-4">
-                <span className="text-foreground text-[13px]">{row.name}</span>
-                <span className="text-[10px] tracking-[0.08em] text-faint">config</span>
+                <span className="text-foreground text-[13px]">
+                  {row.name === "default model" ? t("matrix.defaultModel") : t("matrix.rules")}
+                </span>
+                <span className="text-[10px] tracking-[0.08em] text-faint">
+                  {t("matrix.configTag")}
+                </span>
               </div>
               {row.cells.map((cell, i) => {
                 const agent = agents[i];
@@ -361,10 +373,10 @@ export function McpMatrix({ query }: { query: string }) {
                 const onClick = async () => {
                   const current = cell.value === "not set" ? "" : cell.value;
                   const next = await dialog.prompt({
-                    title: "Modelo por defecto",
-                    message: `Modelo por defecto de ${agentMeta(agent.id).name}:`,
+                    title: t("matrix.modelTitle"),
+                    message: t("matrix.modelMsg", { agent: agentMeta(agent.id).name }),
                     defaultValue: current,
-                    placeholder: "p.ej. claude-opus-4-8",
+                    placeholder: t("matrix.modelPlaceholder"),
                   });
                   if (next?.trim()) actions.setModel(agent.id, next.trim());
                 };
@@ -376,13 +388,15 @@ export function McpMatrix({ query }: { query: string }) {
                     type={editable ? "button" : undefined}
                     onClick={editable ? onClick : undefined}
                     disabled={editable ? actions.busy : undefined}
-                    title={editable ? "Editar modelo" : ""}
+                    title={editable ? t("matrix.editModel") : ""}
                     className={`flex min-w-0 flex-col gap-1.5 border-border border-r border-b p-4 text-left last:border-r-0 ${
                       editable ? "cursor-pointer hover:bg-elevated-2" : ""
                     }`}
                   >
                     <CellBody status={cell.status} changeKey={cell.value}>
-                      <div className="truncate text-muted-foreground text-xs">{cell.value}</div>
+                      <div className="truncate text-muted-foreground text-xs">
+                        {showVal(cell.value)}
+                      </div>
                     </CellBody>
                   </Tag>
                 );
@@ -394,10 +408,7 @@ export function McpMatrix({ query }: { query: string }) {
 
       {actions.error && <p className="mt-3 text-danger text-xs">{`> ${actions.error}`}</p>}
 
-      <p className="mt-3.5 font-sans text-faint text-xs">
-        Clic en celda: MCP/Skill → eliminar (instalado) o compartir (hueco); modelo → editar. Panel
-        de detalle, API keys y sync GitHub llegan después.
-      </p>
+      <p className="mt-3.5 font-sans text-faint text-xs">{t("matrix.hint")}</p>
 
       {showAdd && (
         <AddMcpDialog

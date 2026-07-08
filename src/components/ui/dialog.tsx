@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useT } from "@/i18n";
 import { X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import {
@@ -46,6 +47,7 @@ const DialogContext = createContext<DialogApi | null>(null);
 
 /** Envuelve la app para exponer `useDialog()` con confirm/prompt en estilo shadcn. */
 export function DialogProvider({ children }: { children: ReactNode }) {
+  const t = useT();
   const [pending, setPending] = useState<Pending | null>(null);
   const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -121,7 +123,7 @@ export function DialogProvider({ children }: { children: ReactNode }) {
                     variant="ghost"
                     size="icon"
                     onClick={() => close(pending.kind === "confirm" ? false : null)}
-                    aria-label="Cerrar"
+                    aria-label={t("common.close")}
                   >
                     <X size={16} />
                   </Button>
@@ -144,17 +146,17 @@ export function DialogProvider({ children }: { children: ReactNode }) {
                     />
                     <div className="flex justify-end gap-2">
                       <Button type="button" variant="ghost" size="sm" onClick={() => close(null)}>
-                        {pending.opts.cancelLabel ?? "Cancelar"}
+                        {pending.opts.cancelLabel ?? t("common.cancel")}
                       </Button>
                       <Button type="submit" variant="accent" size="sm">
-                        {pending.opts.confirmLabel ?? "Guardar"}
+                        {pending.opts.confirmLabel ?? t("common.save")}
                       </Button>
                     </div>
                   </form>
                 ) : (
                   <div className="flex justify-end gap-2">
                     <Button type="button" variant="ghost" size="sm" onClick={() => close(false)}>
-                      {pending.opts.cancelLabel ?? "Cancelar"}
+                      {pending.opts.cancelLabel ?? t("common.cancel")}
                     </Button>
                     <Button
                       type="button"
@@ -167,7 +169,7 @@ export function DialogProvider({ children }: { children: ReactNode }) {
                           : undefined
                       }
                     >
-                      {pending.opts.confirmLabel ?? "Confirmar"}
+                      {pending.opts.confirmLabel ?? t("common.confirm")}
                     </Button>
                   </div>
                 )}

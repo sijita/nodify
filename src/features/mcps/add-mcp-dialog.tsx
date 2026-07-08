@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useT } from "@/i18n";
 import { agentMeta } from "@/lib/agents";
 import type { McpInput } from "@/lib/tauri";
 import { X } from "lucide-react";
@@ -14,6 +15,7 @@ interface Props {
 
 /** Modal mínimo para instalar un MCP manualmente en uno o más agentes. */
 export function AddMcpDialog({ agentIds, onClose, onSubmit }: Props) {
+  const t = useT();
   const [name, setName] = useState("");
   const [transport, setTransport] = useState<"stdio" | "http">("stdio");
   const [commandOrUrl, setCommandOrUrl] = useState("");
@@ -45,8 +47,8 @@ export function AddMcpDialog({ agentIds, onClose, onSubmit }: Props) {
     <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/55 p-4">
       <Card className="w-full max-w-md p-5">
         <div className="mb-4 flex items-center justify-between">
-          <span className="font-semibold text-sm tracking-[0.08em]">ADD MCP</span>
-          <Button variant="ghost" size="icon" onClick={onClose} aria-label="Cerrar">
+          <span className="font-semibold text-sm tracking-[0.08em]">{t("addMcp.title")}</span>
+          <Button variant="ghost" size="icon" onClick={onClose} aria-label={t("common.close")}>
             <X size={16} />
           </Button>
         </div>
@@ -54,7 +56,7 @@ export function AddMcpDialog({ agentIds, onClose, onSubmit }: Props) {
         <form onSubmit={submit} className="flex flex-col gap-3">
           <Input
             className={field}
-            placeholder="nombre (p.ej. github)"
+            placeholder={t("addMcp.name")}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
@@ -75,14 +77,14 @@ export function AddMcpDialog({ agentIds, onClose, onSubmit }: Props) {
 
           <Input
             className={field}
-            placeholder={transport === "http" ? "url (https://…)" : "command (p.ej. npx)"}
+            placeholder={transport === "http" ? t("addMcp.url") : t("addMcp.command")}
             value={commandOrUrl}
             onChange={(e) => setCommandOrUrl(e.target.value)}
           />
           {transport === "stdio" && (
             <Input
               className={field}
-              placeholder="args (separados por espacio)"
+              placeholder={t("addMcp.args")}
               value={argsText}
               onChange={(e) => setArgsText(e.target.value)}
             />
@@ -90,7 +92,7 @@ export function AddMcpDialog({ agentIds, onClose, onSubmit }: Props) {
 
           <div className="mt-1">
             <div className="mb-2 text-[10px] tracking-[0.12em] text-muted-foreground">
-              INSTALAR EN
+              {t("addMcp.installIn")}
             </div>
             <div className="flex flex-wrap gap-2">
               {agentIds.map((id) => (
@@ -109,10 +111,10 @@ export function AddMcpDialog({ agentIds, onClose, onSubmit }: Props) {
 
           <div className="mt-2 flex justify-end gap-2">
             <Button type="button" variant="ghost" size="sm" onClick={onClose}>
-              Cancelar
+              {t("common.cancel")}
             </Button>
             <Button type="submit" variant="accent" size="sm">
-              Instalar
+              {t("addMcp.install")}
             </Button>
           </div>
         </form>
