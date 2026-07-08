@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useDialog } from "@/components/ui/dialog";
+import { useT } from "@/i18n";
 import { agentMeta } from "@/lib/agents";
 import { setModel, shareMcp, shareSkill } from "@/lib/tauri";
 import type { AgentScan } from "@/lib/types";
@@ -52,6 +53,7 @@ function planFor(source: AgentScan, target: AgentScan): Plan {
 export function AgentsPanel() {
   const { agents, error, isLoading } = useAgentScan();
   const dialog = useDialog();
+  const t = useT();
   const [sourceId, setSourceId] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null); // id del destino aplicándose ("*" = todos)
   const [msg, setMsg] = useState<string | null>(null);
@@ -60,7 +62,7 @@ export function AgentsPanel() {
   const effectiveSourceId = sourceId ?? agents.find((a) => a.detected)?.id ?? agents[0]?.id ?? null;
   const source = agents.find((a) => a.id === effectiveSourceId) ?? null;
   const plans = useMemo(
-    () => (source ? agents.filter((a) => a.id !== source.id).map((t) => planFor(source, t)) : []),
+    () => (source ? agents.filter((a) => a.id !== source.id).map((tg) => planFor(source, tg)) : []),
     [source, agents],
   );
 
@@ -76,9 +78,13 @@ export function AgentsPanel() {
   const align = async (plan: Plan) => {
     if (!source || plan.total === 0) return;
     const ok = await dialog.confirm({
-      title: "Alinear agente",
-      message: `Aplicar ${plan.total} cambio(s) a ${agentMeta(plan.target.id).name} desde ${agentMeta(source.id).name}. No se elimina nada de lo que ya tenga.`,
-      confirmLabel: "Alinear",
+      title: t("align.confirmOneTitle"),
+      message: t("align.confirmOneMsg", {
+        n: plan.total,
+        target: agentMeta(plan.target.id).name,
+        source: agentMeta(source.id).name,
+      }),
+      confirmLabel: t("common.confirm"),
     });
     if (!ok) return;
     setBusy(plan.target.id);
@@ -86,9 +92,9 @@ export function AgentsPanel() {
     try {
       const n = await applyPlan(plan);
       await mutate("scan-agents");
-      setMsg(`${agentMeta(plan.target.id).name}: ${n} cambio(s) aplicados`);
+      setMsg(t("align.doneOne", { target: agentMeta(plan.target.id).name, n }));
     } catch (e) {
-      setMsg(`error: ${e instanceof Error ? e.message : String(e)}`);
+      setMsg(t("common.error", { err: e instanceof Error ? e.message : String(e) }));
     } finally {
       setBusy(null);
     }
@@ -100,9 +106,13 @@ export function AgentsPanel() {
     const totalChanges = pending.reduce((s, p) => s + p.total, 0);
     if (totalChanges === 0) return;
     const ok = await dialog.confirm({
-      title: "Alinear todos",
-      message: `Propagar ${totalChanges} cambio(s) de ${agentMeta(source.id).name} a ${pending.length} agente(s). No se elimina nada.`,
-      confirmLabel: "Alinear todos",
+      title: t("align.confirmAllTitle"),
+      message: t("align.confirmAllMsg", {
+        n: totalChanges,
+        source: agentMeta(source.id).name,
+        count: pending.length,
+      }),
+      confirmLabel: t("align.confirmAllTitle"),
     });
     if (!ok) return;
     setBusy("*");
@@ -111,17 +121,18 @@ export function AgentsPanel() {
       let n = 0;
       for (const p of pending) n += await applyPlan(p);
       await mutate("scan-agents");
-      setMsg(`${n} cambio(s) aplicados en ${pending.length} agente(s)`);
+      setMsg(t("align.doneAll", { n, count: pending.length }));
     } catch (e) {
-      setMsg(`error: ${e instanceof Error ? e.message : String(e)}`);
+      setMsg(t("common.error", { err: e instanceof Error ? e.message : String(e) }));
     } finally {
       setBusy(null);
     }
   };
 
-  if (isLoading) return <p className="text-muted-foreground text-sm">{"> escaneando agentes…"}</p>;
+  if (isLoading)
+    return <p className="text-muted-foreground text-sm">{t("common.scanningAgents")}</p>;
   if (error)
-    return <p className="text-danger text-sm">{`> error al escanear: ${String(error)}`}</p>;
+    return <p className="text-danger text-sm">{t("common.scanError", { err: String(error) })}</p>;
 
   const pendingCount = plans.reduce((s, p) => s + p.total, 0);
   const inSync = plans.filter((p) => p.total === 0).length;
@@ -129,12 +140,9 @@ export function AgentsPanel() {
   return (
     <div className="mx-auto max-w-[1180px]">
       <h1 className="mb-1 flex items-center gap-2 font-semibold text-sm tracking-[0.08em]">
-        <GitMerge size={15} /> ALIGN
+        <GitMerge size={15} /> {t("align.title")}
       </h1>
-      <p className="mb-4 font-sans text-muted-foreground text-xs">
-        Elige un agente como <strong>fuente de verdad</strong> y propaga sus MCPs, skills y modelo a
-        los demás. Es aditivo: nunca elimina lo que un destino tenga de más.
-      </p>
+      <p className="mb-4 font-sans text-muted-foreground text-xs">{t("align.intro")}</p>
 
       {source && (
         <SourceHero
@@ -162,9 +170,7 @@ export function AgentsPanel() {
               onAlign={() => align(plan)}
             />
           ))}
-        {plans.length === 0 && (
-          <p className="text-faint text-xs">{"> se necesitan al menos 2 agentes"}</p>
-        )}
+        {plans.length === 0 && <p className="text-faint text-xs">{t("align.needTwo")}</p>}
       </div>
 
       {msg && <p className="mt-3 text-muted-foreground text-xs">{`> ${msg}`}</p>}
@@ -192,6 +198,7 @@ function SourceHero({
   busy: string | null;
   onAlignAll: () => void;
 }) {
+  const t = useT();
   const meta = agentMeta(source.id);
   const allSynced = pendingCount === 0 && totalTargets > 0;
   const ratio = totalTargets ? inSync / totalTargets : 1;
@@ -201,7 +208,7 @@ function SourceHero({
       {/* barra superior: label + selector de fuente */}
       <div className="flex flex-wrap items-center gap-2 border-border border-b bg-elevated px-4 py-2.5">
         <span className="mr-1 flex items-center gap-1.5 text-[10px] tracking-[0.16em] text-faint">
-          <span className="text-muted-foreground">▚</span> FUENTE DE VERDAD
+          <span className="text-muted-foreground">▚</span> {t("align.source")}
         </span>
         {agents.map((a) => {
           const active = a.id === source.id;
@@ -231,15 +238,16 @@ function SourceHero({
           <div className="font-semibold text-[15px]">{meta.name}</div>
           <div className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 font-mono text-[11px] text-faint">
             <span>
-              <span className="text-muted-foreground">{source.mcps.length}</span> mcps
+              <span className="text-muted-foreground">{source.mcps.length}</span> {t("align.mcps")}
             </span>
             <span>·</span>
             <span>
-              <span className="text-muted-foreground">{source.skills.length}</span> skills
+              <span className="text-muted-foreground">{source.skills.length}</span>{" "}
+              {t("align.skills")}
             </span>
             <span>·</span>
             <span className="truncate text-muted-foreground">
-              {source.config.model ?? "sin modelo"}
+              {source.config.model ?? t("align.noModel")}
             </span>
           </div>
         </div>
@@ -251,7 +259,7 @@ function SourceHero({
           disabled={!!busy || pendingCount === 0}
         >
           <GitMerge size={13} />
-          {busy === "*" ? "propagando…" : `Alinear todos · ${pendingCount}`}
+          {busy === "*" ? t("align.propagating") : t("align.alignAll", { n: pendingCount })}
         </Button>
       </div>
 
@@ -267,11 +275,11 @@ function SourceHero({
         </div>
         <span className="font-mono text-[11px] text-faint">
           {allSynced ? (
-            <span className="text-success">≡ todos en sync</span>
+            <span className="text-success">{t("align.allInSync")}</span>
           ) : (
             <>
-              <span className="text-foreground">{inSync}</span>/{totalTargets} en sync ·{" "}
-              <span className="text-warning">{pendingCount} Δ</span>
+              {t("align.inSync", { n: inSync, total: totalTargets })} ·{" "}
+              <span className="text-warning">{t("align.pending", { n: pendingCount })}</span>
             </>
           )}
         </span>
@@ -324,6 +332,7 @@ function DiffPanel({
   disabled: boolean;
   onAlign: () => void;
 }) {
+  const t = useT();
   const meta = agentMeta(plan.target.id);
   const aligned = plan.total === 0;
   const rows = rowsOf(plan);
@@ -356,7 +365,9 @@ function DiffPanel({
             <span className="ml-1 font-semibold font-sans text-[13px]">{meta.name}</span>
           </div>
           {aligned ? (
-            <span className="font-mono text-[10px] tracking-[0.1em] text-success">≡ SYNC</span>
+            <span className="font-mono text-[10px] tracking-[0.1em] text-success">
+              {t("align.synced")}
+            </span>
           ) : (
             <motion.span
               key={plan.total}
@@ -365,7 +376,7 @@ function DiffPanel({
               animate={{ scale: 1, opacity: 1 }}
               transition={{ type: "spring", stiffness: 500, damping: 24 }}
             >
-              Δ {plan.total}
+              {t("align.delta", { n: plan.total })}
             </motion.span>
           )}
         </div>
@@ -373,7 +384,7 @@ function DiffPanel({
         {/* cuerpo: diff estilo terminal (líneas apareciendo) */}
         {aligned ? (
           <div className="flex flex-1 items-center justify-center px-4 py-7 text-center font-mono text-[11px] text-faint">
-            {"// ya coincide con la fuente"}
+            {t("align.matches")}
           </div>
         ) : (
           <div className="flex-1 bg-surface px-3.5 py-3 font-mono text-[12px] leading-[1.7]">
@@ -392,7 +403,11 @@ function DiffPanel({
             disabled={disabled || aligned}
             className="w-full"
           >
-            {busy ? "alineando…" : aligned ? "sin cambios" : `Alinear · ${plan.total}`}
+            {busy
+              ? t("align.aligning")
+              : aligned
+                ? t("align.noChanges")
+                : t("align.align", { n: plan.total })}
           </Button>
         </div>
       </Card>
@@ -401,6 +416,13 @@ function DiffPanel({
 }
 
 function DiffRow({ row, delay }: { row: Row; delay: number }) {
+  const t = useT();
+  const kindLabel =
+    row.kind === "model"
+      ? t("align.kindModel")
+      : row.kind === "skill"
+        ? t("align.kindSkill")
+        : t("align.kindMcp");
   return (
     <motion.div
       className="flex items-center gap-2.5"
@@ -409,7 +431,7 @@ function DiffRow({ row, delay }: { row: Row; delay: number }) {
       transition={{ delay, duration: 0.22, ease: "easeOut" }}
     >
       <span className={`w-2 flex-shrink-0 font-semibold ${row.tone}`}>{row.glyph}</span>
-      <span className="w-11 flex-shrink-0 text-faint">{row.kind}</span>
+      <span className="w-11 flex-shrink-0 text-faint">{kindLabel}</span>
       <span className="truncate text-muted-foreground" title={row.name}>
         {row.name}
       </span>

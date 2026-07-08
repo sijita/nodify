@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card";
+import { useT } from "@/i18n";
 import { Bot, List, TriangleAlert, Unplug } from "lucide-react";
 
 interface Stat {
@@ -19,11 +20,12 @@ export function StatCards({
   differs: number;
   errors: number;
 }) {
+  const t = useT();
   const stats: Stat[] = [
-    { label: "AGENTS", value: agents, icon: Bot },
-    { label: "MCP SERVERS", value: mcps, icon: List },
-    { label: "DIFFERS", value: differs, icon: Unplug, tone: "warning" },
-    { label: "ERRORS", value: errors, icon: TriangleAlert, tone: "danger" },
+    { label: t("stats.agents"), value: agents, icon: Bot },
+    { label: t("stats.mcpServers"), value: mcps, icon: List },
+    { label: t("stats.differs"), value: differs, icon: Unplug, tone: "warning" },
+    { label: t("stats.errors"), value: errors, icon: TriangleAlert, tone: "danger" },
   ];
 
   return (
