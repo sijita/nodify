@@ -71,7 +71,8 @@ export function SyncPanel() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Input
-            className="min-w-[240px] flex-1 border border-border bg-surface px-3 py-2 rounded-[var(--radius-sm)]"
+            size="sm"
+            className="min-w-[240px] flex-1"
             placeholder={t("sync.repoPlaceholder")}
             value={repo}
             onChange={(e) => setRepo(e.target.value)}

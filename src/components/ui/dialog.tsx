@@ -142,7 +142,7 @@ export function DialogProvider({ children }: { children: ReactNode }) {
                       value={value}
                       placeholder={pending.opts.placeholder}
                       onChange={(e) => setValue(e.target.value)}
-                      className="w-full border border-border bg-surface px-3 py-2 rounded-[var(--radius-sm)]"
+                      className="w-full"
                     />
                     <div className="flex justify-end gap-2">
                       <Button type="button" variant="ghost" size="sm" onClick={() => close(null)}>

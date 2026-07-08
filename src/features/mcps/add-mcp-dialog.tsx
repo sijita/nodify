@@ -21,8 +21,6 @@ interface Pair {
   v: string;
 }
 
-const FIELD = "w-full border border-border bg-surface px-3 py-2 rounded-[var(--radius-sm)]";
-
 /** Formulario para instalar un MCP manualmente en uno o más agentes. */
 export function AddMcpDialog({ open, agentIds, onClose, onSubmit }: Props) {
   const t = useT();
@@ -112,7 +110,7 @@ export function AddMcpDialog({ open, agentIds, onClose, onSubmit }: Props) {
                 <div className="flex flex-1 flex-col gap-4 overflow-auto p-5">
                   <Labeled label={t("addMcp.nameLabel")}>
                     <Input
-                      className={FIELD}
+                      className="w-full"
                       placeholder={t("addMcp.name")}
                       value={name}
                       onChange={(e) => setName(e.target.value)}
@@ -140,7 +138,7 @@ export function AddMcpDialog({ open, agentIds, onClose, onSubmit }: Props) {
                     label={transport === "http" ? t("addMcp.urlLabel") : t("addMcp.commandLabel")}
                   >
                     <Input
-                      className={FIELD}
+                      className="w-full"
                       placeholder={transport === "http" ? t("addMcp.url") : t("addMcp.command")}
                       value={commandOrUrl}
                       onChange={(e) => setCommandOrUrl(e.target.value)}
@@ -150,7 +148,7 @@ export function AddMcpDialog({ open, agentIds, onClose, onSubmit }: Props) {
                   {transport === "stdio" && (
                     <Labeled label={t("addMcp.argsLabel")}>
                       <Input
-                        className={FIELD}
+                        className="w-full"
                         placeholder={t("addMcp.args")}
                         value={argsText}
                         onChange={(e) => setArgsText(e.target.value)}
@@ -243,13 +241,15 @@ function PairEditor({
         // biome-ignore lint/suspicious/noArrayIndexKey: filas efímeras sin id estable
         <div key={i} className="flex gap-2">
           <Input
-            className={`${FIELD} w-1/3`}
+            size="sm"
+            className="w-1/3"
             placeholder={t("addMcp.keyPh")}
             value={p.k}
             onChange={(e) => set(i, { k: e.target.value })}
           />
           <Input
-            className={`${FIELD} flex-1`}
+            size="sm"
+            className="flex-1"
             placeholder={t("addMcp.valuePh")}
             value={p.v}
             onChange={(e) => set(i, { v: e.target.value })}

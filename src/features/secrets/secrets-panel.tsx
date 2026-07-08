@@ -86,10 +86,11 @@ export function SecretsPanel() {
             </div>
             <Input
               type="password"
+              size="sm"
               placeholder={t("secrets.value")}
               value={values[key] ?? ""}
               onChange={(e) => setValues((v) => ({ ...v, [key]: e.target.value }))}
-              className="w-40 border border-border bg-surface px-2 py-1.5 rounded-[var(--radius-sm)]"
+              className="w-40"
             />
             <Button variant="outline" size="sm" onClick={() => apply(key)} disabled={!values[key]}>
               {t("secrets.setClaude")}
