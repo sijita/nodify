@@ -141,6 +141,15 @@ pub fn remove_skill(agent_id: String, name: String) -> Result<(), String> {
     remove_skill_fs(&skills_dir(id, &current_env()), &name).map_err(|e| e.to_string())
 }
 
+/// Contenido completo del `SKILL.md` de un skill (frontmatter + cuerpo), para el modal
+/// de detalle. Es lo que documenta qué hace el skill y cómo se usa.
+#[tauri::command]
+pub fn read_skill(agent_id: String, name: String) -> Result<String, String> {
+    let (id, _) = adapter_for(&agent_id)?;
+    let path = skills_dir(id, &current_env()).join(&name).join("SKILL.md");
+    std::fs::read_to_string(&path).map_err(|e| e.to_string())
+}
+
 // ---------- Proveedores (solo lectura; sin valores de secretos) ----------
 
 #[tauri::command]

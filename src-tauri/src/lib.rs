@@ -24,6 +24,7 @@ pub fn run() {
             mutate::set_model,
             mutate::share_skill,
             mutate::remove_skill,
+            mutate::read_skill,
             mutate::read_rules,
             mutate::write_rules,
             mutate::list_providers,

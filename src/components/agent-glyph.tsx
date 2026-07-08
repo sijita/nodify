@@ -1,14 +1,19 @@
 import { agentMeta } from "@/lib/agents";
+import { type LucideIcon, SquareTerminal } from "lucide-react";
 import { siClaudecode, siOpencode } from "simple-icons";
 
 /**
- * Logo oficial monocromo del agente (simple-icons), con `currentColor` para que herede
- * el color de tinta del tema. Codex no tiene icono oficial en simple-icons (OpenAI pidió
- * retirarlo), así que cae al badge de texto ("CX").
+ * Logo del agente con `currentColor` (hereda el color de tinta del tema). Prioridad:
+ * 1) logo oficial monocromo de simple-icons; 2) icono de lucide (Codex no tiene icono
+ * oficial — OpenAI pidió retirarlo de simple-icons); 3) badge de texto.
  */
 const ICONS: Record<string, { path: string }> = {
   "claude-code": siClaudecode,
   opencode: siOpencode,
+};
+
+const LUCIDE: Record<string, LucideIcon> = {
+  codex: SquareTerminal,
 };
 
 export function AgentGlyph({
@@ -35,6 +40,10 @@ export function AgentGlyph({
         <path d={icon.path} />
       </svg>
     );
+  }
+  const Lucide = LUCIDE[id];
+  if (Lucide) {
+    return <Lucide size={size} className={className} aria-label={agentMeta(id).name} />;
   }
   return <span className={className}>{agentMeta(id).badge}</span>;
 }

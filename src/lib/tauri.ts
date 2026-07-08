@@ -4,6 +4,7 @@ import {
   mockInstall,
   mockListProviders,
   mockReadRules,
+  mockReadSkill,
   mockRemove,
   mockRemoveSkill,
   mockScan,
@@ -66,6 +67,12 @@ export function shareSkill(fromId: string, toId: string, name: string): Promise<
 export function removeSkill(agentId: string, name: string): Promise<void> {
   if (!isTauri()) return Promise.resolve(mockRemoveSkill(agentId, name));
   return invoke("remove_skill", { agentId, name });
+}
+
+/** Contenido del `SKILL.md` (frontmatter + cuerpo) para el modal de detalle. */
+export function readSkill(agentId: string, name: string): Promise<string> {
+  if (!isTauri()) return Promise.resolve(mockReadSkill(agentId, name));
+  return invoke<string>("read_skill", { agentId, name });
 }
 
 // ---------- Proveedores / secretos ----------
