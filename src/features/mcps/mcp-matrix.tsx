@@ -1,3 +1,4 @@
+import { AgentGlyph } from "@/components/agent-glyph";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useDialog } from "@/components/ui/dialog";
@@ -168,7 +169,7 @@ export function McpMatrix({ query }: { query: string }) {
               >
                 <div className="flex items-center gap-3">
                   <span className="flex h-[34px] w-[34px] flex-shrink-0 items-center justify-center rounded-[var(--radius-sm)] border border-border-strong bg-surface font-semibold text-xs tracking-[0.04em]">
-                    {meta.badge}
+                    <AgentGlyph id={a.id} size={18} />
                   </span>
                   <div className="min-w-0">
                     <div className="truncate font-semibold text-sm">{meta.name}</div>

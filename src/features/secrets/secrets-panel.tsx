@@ -1,3 +1,4 @@
+import { AgentGlyph } from "@/components/agent-glyph";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -77,8 +78,9 @@ export function SecretsPanel() {
             <span className="min-w-[200px] flex-1 truncate font-mono text-[13px]">{key}</span>
             <div className="flex gap-1">
               {refs.map((id) => (
-                <Badge key={id} variant="outline">
-                  {agentMeta(id).badge}
+                <Badge key={id} variant="outline" className="gap-1.5">
+                  <AgentGlyph id={id} size={12} />
+                  {agentMeta(id).name}
                 </Badge>
               ))}
             </div>

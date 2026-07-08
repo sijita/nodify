@@ -1,3 +1,4 @@
+import { AgentGlyph } from "@/components/agent-glyph";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/i18n";
@@ -38,7 +39,7 @@ export function AgentDrawer({ agent, onClose }: { agent: AgentScan; onClose: () 
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3">
               <Badge variant="avatar" className="h-10 w-10">
-                {meta.badge}
+                <AgentGlyph id={agent.id} size={22} />
               </Badge>
               <div>
                 <div className="font-semibold text-[17px]">{meta.name}</div>
