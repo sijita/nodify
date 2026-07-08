@@ -1,6 +1,16 @@
+<div align="center">
+
+<img src="public/app-icon.png" alt="Nodify" width="112" height="112" />
+
 # Nodify
 
-> **Un solo panel para gobernar la configuración de todos tus agentes de IA de código.**
+**Un solo panel para gobernar la configuración de todos tus agentes de IA de código.**
+
+🌐 Read this in [English](README.en.md)
+
+</div>
+
+---
 
 Nodify es una app de escritorio que detecta, lee y edita —de forma segura— la
 configuración de **Claude Code**, **Codex** y **OpenCode** desde un único lugar:
@@ -9,7 +19,7 @@ API keys. Y las **sincroniza entre tus dispositivos** vía un repositorio Git.
 
 Construida con **Tauri v2** (ventana nativa), un **core en Rust** sin GUI (testeable
 headless) y un **frontend React + TypeScript** con un sistema de diseño monocromo
-retro/hacker.
+retro/hacker, bilingüe (ES/EN) y con tema claro/oscuro.
 
 ---
 
@@ -17,6 +27,7 @@ retro/hacker.
 
 - [El problema](#el-problema)
 - [Características clave](#características-clave)
+- [Interfaz](#interfaz)
 - [Agentes soportados y compatibilidad](#agentes-soportados-y-compatibilidad)
 - [Garantías de seguridad](#garantías-de-seguridad)
 - [Arquitectura](#arquitectura)
@@ -75,10 +86,36 @@ escribe de vuelta preservando lo que no entiende.**
   Codex/OpenCode leen del shell o `auth.json`, que Nodify **nunca toca**.
 - Nodify **no almacena** valores de secretos (ver [ADR-0004](docs/adr/0004-secrets-passthrough-masked.md)).
 
+### ⚖️ Alineación (ALIGN)
+- Elige un agente como **fuente de verdad** y **propaga** sus MCPs, skills y modelo al resto
+  con un clic (por agente o "alinear todos").
+- Muestra un **plan de cambios** por destino (`+`/`~` mcps, `+` skills, `~` modelo) antes de aplicar,
+  con una barra de estado global de sincronía.
+- Es **aditivo**: nunca elimina lo que un destino ya tenga de más. Resuelve, en bloque, las
+  divergencias que la matriz solo expone.
+
 ### 🔄 Sincronización multi-dispositivo
 - Exporta un **bundle canónico** (con los secretos convertidos a referencias de env var, nunca valores).
 - `push` / `pull` sobre un repositorio Git para replicar tu configuración entre máquinas.
 - Vista de **diff** previo (`+` añadido, `-` eliminado, `~` cambiado) antes de aplicar.
+
+---
+
+## Interfaz
+
+Sistema de diseño monocromo "tinta sobre papel", retro/hacker pero moderno:
+
+- **Tema claro / oscuro** con toggle (☾/☀), persistido.
+- **Bilingüe ES/EN** con toggle en la barra superior: i18n propio y ligero (Zustand + diccionarios
+  tipados), detecta el idioma del navegador y guarda tu preferencia.
+- **Logos oficiales de los agentes** (vía [simple-icons](https://simpleicons.org), monocromos con
+  `currentColor`) para Claude Code y OpenCode; Codex usa un badge de texto (no tiene icono oficial).
+- **Animaciones** sutiles y snappy con [`motion`](https://motion.dev) (Framer Motion): dock deslizante,
+  transiciones de sección, celdas de la matriz que "hacen pop" al mutar, cascada del panel ALIGN,
+  botón SCAN. Respeta `prefers-reduced-motion`.
+- **Diálogos propios estilo shadcn** (confirm/prompt) en vez de los nativos del navegador.
+- **Preview en navegador**: fuera de la app nativa hay un mock mutable, así que toda la UI y sus
+  acciones son navegables sin backend (`npm run dev`).
 
 ---
 
@@ -166,10 +203,11 @@ crates/
 ```
 
 - **Frontend**: React 19 + Vite 6 + Tailwind v4 + componentes shadcn-style (CVA) + SWR
-  (fetching/caché) + Zustand (navegación) + Biome (lint/format).
+  (fetching/caché) + Zustand (navegación e idioma) + `motion` (animaciones) + `simple-icons`
+  (logos) + Biome (lint/format).
 - **Fuera de Tauri** (preview en navegador) hay un **mock mutable**: todas las acciones
-  (instalar, eliminar, compartir, modelo, skills, reglas, export) funcionan sobre datos demo,
-  para poder ver la UI sin backend.
+  (instalar, eliminar, compartir, modelo, skills, reglas, alinear, export) funcionan sobre
+  datos demo, para poder ver la UI sin backend.
 
 ### Decisiones de arquitectura (ADRs)
 
@@ -204,11 +242,14 @@ cd nodify
 npm install
 
 # Genera los iconos una única vez (requerido por Tauri):
-npx tauri icon path/al/logo.png     # crea src-tauri/icons/
+npx tauri icon nodify_logo.png      # crea src-tauri/icons/
 
 npm run tauri dev     # desarrollo (hot-reload)
 npm run tauri build   # binario/instalador de producción
 ```
+
+> La primera vez que corras la app nativa contra tus archivos reales, sigue la checklist de
+> [SMOKE-TEST.md](SMOKE-TEST.md): hace backup previo y verifica cada escritura por terminal.
 
 ---
 
@@ -246,12 +287,15 @@ nodify/
 │   └── nodify-io/              #   detect.rs (rutas) · write.rs (safe_write) · skills.rs
 ├── src-tauri/                  # shell Tauri: comandos que exponen el core (mutate.rs, scan.rs)
 ├── src/                        # frontend React (screaming architecture por feature)
-│   ├── app/                    #   layout, dock-nav, grid-background, top-bar, theme
-│   ├── components/ui/          #   button, card, input, badge, status-indicator (CVA)
-│   ├── features/               #   mcps/ · agents/ · secrets/ · sync/
+│   ├── app/                    #   layout, dock-nav, grid-background, top-bar, logo, theme
+│   ├── assets/                 #   logos de la marca (claro/oscuro)
+│   ├── components/             #   ui/ (button, card, input, badge, dialog…) · agent-glyph
+│   ├── features/               #   mcps/ · agents/ (ALIGN + drawer) · secrets/ · sync/
+│   ├── i18n/                   #   store de idioma + diccionarios en.ts / es.ts
 │   └── lib/                    #   tauri.ts (wrappers) · mock.ts · types.ts · agents.ts
+├── public/                     # favicon / icono de la app
 ├── docs/                       # canonical-model, adapters/, adr/, design-system
-├── CONTEXT.md · PRD.md · PLAN.md · CONVENTIONS.md
+├── CONTEXT.md · PRD.md · PLAN.md · CONVENTIONS.md · SMOKE-TEST.md
 └── Cargo.toml · package.json · vite.config.ts · biome.json
 ```
 
@@ -299,7 +343,8 @@ No. Nodify detecta los que tengas presentes y muestra el resto como ausentes.
 ## Roadmap
 
 Completado (MVP, fases 0–5): lectura + escritura de MCPs, Skills, modelo, reglas, proveedores,
-API keys y sync por Git. Ver [PLAN.md](PLAN.md).
+API keys, alineación entre agentes y sync por Git; más i18n (ES/EN), tema claro/oscuro y branding.
+Ver [PLAN.md](PLAN.md).
 
 Post-MVP (backlog):
 
