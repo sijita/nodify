@@ -2,7 +2,7 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Nodify",
   "version": "0.1.1",
-  "identifier": "co.leancore.nodify",
+  "identifier": "io.github.sijita.nodify",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
