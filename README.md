@@ -88,14 +88,20 @@ escribe de vuelta preservando lo que no entiende.**
 
 ### 🔌 MCPs (Model Context Protocol servers)
 - **Matriz de estado**: filas = MCP, columnas = agentes, celda = instalado / ausente / divergente.
-- **Instalar** un MCP en un agente (modal manual: stdio o HTTP, args, env, headers).
+- **Modal de detalle**: clic en cualquier celda abre un panel con la config completa del MCP (transporte,
+  endpoint/comando, estado, env vars referenciadas, agentes en los que está presente).
+- **Instalar** un MCP en un agente (modal: stdio o HTTP, args, env vars, headers con editor de pares clave/valor).
 - **Eliminar** un MCP (con confirmación).
 - **Compartir**: copiar un MCP de un agente a otro **traduciendo el formato** automáticamente
   (p. ej. `command` string ↔ array, `env` ↔ `environment`, `Authorization` header ↔ `bearer_token_env_var`).
 
 ### 🧩 Skills
 - Descubrimiento de Skills (`SKILL.md` con frontmatter) en los directorios de cada agente.
+- **Modal de detalle**: clic en la celda muestra la descripción extraída del frontmatter y el contenido
+  completo del `SKILL.md`.
 - **Compartir** una Skill (copia recursiva de la carpeta) y **eliminar**.
+- **Visibilidad de agentes**: oculta o muestra columnas (agentes) con un toggle en la barra superior.
+  Solo afecta la vista — Nodify sigue leyendo y escribiendo la config del agente oculto con normalidad.
 
 ### ⚙️ Config por agente
 - **Modelo por defecto**: leer y editar, con detección de divergencia entre agentes.
@@ -132,8 +138,8 @@ Sistema de diseño monocromo "tinta sobre papel", retro/hacker pero moderno:
 - **Tema claro / oscuro** con toggle (☾/☀), persistido.
 - **Bilingüe ES/EN** con toggle en la barra superior: i18n propio y ligero (Zustand + diccionarios
   tipados), detecta el idioma del navegador y guarda tu preferencia.
-- **Logos oficiales de los agentes** (vía [simple-icons](https://simpleicons.org), monocromos con
-  `currentColor`) para Claude Code y OpenCode; Codex usa un badge de texto (no tiene icono oficial).
+- **Logos oficiales de los agentes** (vía [simple-icons](https://simpleicons.org) y [svgl.app](https://svgl.app),
+  monocromos con `currentColor`) para Claude Code, OpenCode y Codex.
 - **Animaciones** sutiles y snappy con [`motion`](https://motion.dev) (Framer Motion): dock deslizante,
   transiciones de sección, celdas de la matriz que "hacen pop" al mutar, cascada del panel ALIGN,
   botón SCAN. Respeta `prefers-reduced-motion`.

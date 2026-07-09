@@ -87,14 +87,19 @@ preserving what it doesn't understand.**
 
 ### 🔌 MCPs (Model Context Protocol servers)
 - **Status matrix**: rows = MCP, columns = agents, cell = installed / missing / diverging.
-- **Install** an MCP on an agent (manual modal: stdio or HTTP, args, env, headers).
+- **Detail modal**: clicking any cell opens a panel with the full MCP config (transport,
+  endpoint/command, status, referenced env vars, agents it is present in).
+- **Install** an MCP on an agent (modal: stdio or HTTP, args, env vars, headers with a key/value pair editor).
 - **Remove** an MCP (with confirmation).
 - **Share**: copy an MCP from one agent to another **translating the format** automatically
   (e.g. `command` string ↔ array, `env` ↔ `environment`, `Authorization` header ↔ `bearer_token_env_var`).
 
 ### 🧩 Skills
 - Skill discovery (`SKILL.md` with frontmatter) in each agent's directories.
+- **Detail modal**: clicking a cell shows the description from frontmatter and the full `SKILL.md` content.
 - **Share** a Skill (recursive folder copy) and **remove**.
+- **Agent visibility**: hide or show columns (agents) via a toggle in the top bar.
+  View-only — Nodify keeps reading and writing the hidden agent's config normally.
 
 ### ⚙️ Per-agent config
 - **Default model**: read and edit, with divergence detection across agents.
@@ -131,8 +136,8 @@ Monochrome "ink-on-paper" design system, retro/hacker but modern:
 - **Light / dark theme** with a toggle (☾/☀), persisted.
 - **Bilingual ES/EN** with a toggle in the top bar: lightweight in-house i18n (Zustand + typed
   dictionaries), detects the browser language and saves your preference.
-- **Official agent logos** (via [simple-icons](https://simpleicons.org), monochrome with
-  `currentColor`) for Claude Code and OpenCode; Codex uses a text badge (it has no official icon).
+- **Official agent logos** (via [simple-icons](https://simpleicons.org) and [svgl.app](https://svgl.app),
+  monochrome with `currentColor`) for Claude Code, OpenCode, and Codex.
 - **Animations** — subtle and snappy — with [`motion`](https://motion.dev) (Framer Motion): sliding
   dock, section transitions, matrix cells that "pop" on mutation, the ALIGN panel cascade, the SCAN
   button. Respects `prefers-reduced-motion`.
