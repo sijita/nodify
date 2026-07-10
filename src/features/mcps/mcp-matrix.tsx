@@ -65,7 +65,7 @@ function RowLabel({ name, tag, onInfo }: { name: string; tag: string; onInfo: ()
       type="button"
       onClick={onInfo}
       title={t("matrix.info")}
-      className="group sticky left-0 z-10 flex flex-col gap-0.5 border-border border-r border-b bg-surface p-4 text-left hover:bg-elevated-2"
+      className="group sticky left-0 z-10 flex flex-col gap-0.5 border-border border-r border-b bg-surface p-4 text-left will-change-transform hover:bg-elevated-2"
     >
       <span className="flex items-center gap-1.5 text-foreground text-[13px]">
         <span className="truncate">{name}</span>
@@ -274,7 +274,7 @@ export function McpMatrix({ query }: { query: string }) {
         <div ref={scrollRef} className="overflow-x-auto">
           <div className="grid" style={{ gridTemplateColumns: cols }}>
             {/* esquina (fija a la izquierda) + header-cards de agente */}
-            <div className="sticky left-0 z-20 flex flex-col justify-end border-border border-r border-b bg-elevated p-4">
+            <div className="sticky left-0 z-20 flex flex-col justify-end border-border border-r border-b bg-elevated p-4 will-change-transform">
               <span className="text-[10px] tracking-[0.12em] text-faint">
                 {t("matrix.configAgent")}
               </span>
@@ -314,7 +314,7 @@ export function McpMatrix({ query }: { query: string }) {
 
             {/* banda MCP SERVERS (controles fijos a la izquierda visible) */}
             <div className="col-span-full border-border border-b bg-elevated">
-              <div className="sticky left-0 flex w-fit items-center gap-3 px-4 py-2">
+              <div className="sticky left-0 flex w-fit items-center gap-3 px-4 py-2 will-change-transform">
                 <span className="flex items-center gap-2.5 font-semibold text-[11px] tracking-[0.16em] text-muted-foreground">
                   <List size={14} />
                   {t("matrix.mcpServers")}
@@ -402,7 +402,7 @@ export function McpMatrix({ query }: { query: string }) {
 
             {/* banda SKILLS (solo lectura; compartir/enable llegan luego) */}
             <div className="col-span-full border-border border-b bg-elevated">
-              <div className="sticky left-0 flex w-fit items-center gap-3 px-4 py-2">
+              <div className="sticky left-0 flex w-fit items-center gap-3 px-4 py-2 will-change-transform">
                 <span className="flex items-center gap-2.5 font-semibold text-[11px] tracking-[0.16em] text-muted-foreground">
                   <Sparkles size={14} />
                   {t("matrix.skills")}
@@ -475,7 +475,7 @@ export function McpMatrix({ query }: { query: string }) {
 
             {/* banda CONFIG (solo lectura) */}
             <div className="col-span-full border-border border-b bg-elevated">
-              <div className="sticky left-0 flex w-fit items-center gap-3 px-4 py-2">
+              <div className="sticky left-0 flex w-fit items-center gap-3 px-4 py-2 will-change-transform">
                 <span className="flex items-center gap-2.5 font-semibold text-[11px] tracking-[0.16em] text-muted-foreground">
                   <SlidersHorizontal size={14} />
                   {t("matrix.config")}
@@ -486,7 +486,7 @@ export function McpMatrix({ query }: { query: string }) {
 
             {configRows.map((row) => (
               <div key={row.name} className="contents">
-                <div className="sticky left-0 z-10 flex flex-col gap-0.5 border-border border-r border-b bg-surface p-4">
+                <div className="sticky left-0 z-10 flex flex-col gap-0.5 border-border border-r border-b bg-surface p-4 will-change-transform">
                   <span className="text-foreground text-[13px]">
                     {row.name === "default model" ? t("matrix.defaultModel") : t("matrix.rules")}
                   </span>
