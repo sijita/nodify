@@ -65,7 +65,7 @@ function RowLabel({ name, tag, onInfo }: { name: string; tag: string; onInfo: ()
       type="button"
       onClick={onInfo}
       title={t("matrix.info")}
-      className="group sticky left-0 z-10 flex flex-col gap-0.5 border-border border-r border-b bg-surface p-4 text-left will-change-transform hover:bg-elevated-2"
+      className="group sticky left-0 z-10 flex flex-col gap-0.5 border-border border-r border-b bg-surface p-4 text-left hover:bg-elevated-2"
     >
       <span className="flex items-center gap-1.5 text-foreground text-[13px]">
         <span className="truncate">{name}</span>
@@ -273,48 +273,54 @@ export function McpMatrix({ query }: { query: string }) {
       <Card className="relative overflow-hidden">
         <div ref={scrollRef} className="overflow-x-auto">
           <div className="grid" style={{ gridTemplateColumns: cols }}>
-            {/* esquina (fija a la izquierda) + header-cards de agente */}
-            <div className="sticky left-0 z-20 flex flex-col justify-end border-border border-r border-b bg-elevated p-4 will-change-transform">
-              <span className="text-[10px] tracking-[0.12em] text-faint">
-                {t("matrix.configAgent")}
-              </span>
-            </div>
-            {agents.map((a) => {
-              const meta = agentMeta(a.id);
-              const ok = a.mcps.length;
-              return (
-                <button
-                  key={a.id}
-                  type="button"
-                  onClick={() => setSelectedId(a.id)}
-                  title={t("matrix.viewDetail", { agent: meta.name })}
-                  className="cursor-pointer border-border border-r border-b bg-elevated p-4 text-left last:border-r-0 hover:bg-elevated-2"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="flex h-[34px] w-[34px] flex-shrink-0 items-center justify-center rounded-[var(--radius-sm)] border border-border-strong bg-surface font-semibold text-xs tracking-[0.04em]">
-                      <AgentGlyph id={a.id} size={18} />
-                    </span>
-                    <div className="min-w-0">
-                      <div className="truncate font-semibold text-sm">{meta.name}</div>
-                      <div className="text-muted-foreground text-xs">
-                        {a.detected ? t("matrix.detected") : t("matrix.notDetected")}
+            {/* Fila de header como sub-grid de ancho completo: así la primera celda
+                (`sticky left-0`) vive dentro de un contenedor que abarca todo el ancho
+                desplazable, único caso en que WKWebView respeta el sticky (los grid
+                items sticky directos fallan en modo ventana en macOS). */}
+            <div className="col-span-full grid" style={{ gridTemplateColumns: cols }}>
+              {/* esquina (fija a la izquierda) */}
+              <div className="sticky left-0 z-20 flex flex-col justify-end border-border border-r border-b bg-elevated p-4">
+                <span className="text-[10px] tracking-[0.12em] text-faint">
+                  {t("matrix.configAgent")}
+                </span>
+              </div>
+              {agents.map((a) => {
+                const meta = agentMeta(a.id);
+                const ok = a.mcps.length;
+                return (
+                  <button
+                    key={a.id}
+                    type="button"
+                    onClick={() => setSelectedId(a.id)}
+                    title={t("matrix.viewDetail", { agent: meta.name })}
+                    className="cursor-pointer border-border border-r border-b bg-elevated p-4 text-left last:border-r-0 hover:bg-elevated-2"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-[34px] w-[34px] flex-shrink-0 items-center justify-center rounded-[var(--radius-sm)] border border-border-strong bg-surface font-semibold text-xs tracking-[0.04em]">
+                        <AgentGlyph id={a.id} size={18} />
+                      </span>
+                      <div className="min-w-0">
+                        <div className="truncate font-semibold text-sm">{meta.name}</div>
+                        <div className="text-muted-foreground text-xs">
+                          {a.detected ? t("matrix.detected") : t("matrix.notDetected")}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="mt-3 truncate text-[11px] text-faint" title={a.configPath}>
-                    {a.configPath}
-                  </div>
-                  <div className="mt-3 flex gap-3 text-[11px]">
-                    <span className="text-success">✓ {ok}</span>
-                    {a.error && <span className="text-danger">✕ 1</span>}
-                  </div>
-                </button>
-              );
-            })}
+                    <div className="mt-3 truncate text-[11px] text-faint" title={a.configPath}>
+                      {a.configPath}
+                    </div>
+                    <div className="mt-3 flex gap-3 text-[11px]">
+                      <span className="text-success">✓ {ok}</span>
+                      {a.error && <span className="text-danger">✕ 1</span>}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
 
             {/* banda MCP SERVERS (controles fijos a la izquierda visible) */}
             <div className="col-span-full border-border border-b bg-elevated">
-              <div className="sticky left-0 flex w-fit items-center gap-3 px-4 py-2 will-change-transform">
+              <div className="sticky left-0 flex w-fit items-center gap-3 px-4 py-2">
                 <span className="flex items-center gap-2.5 font-semibold text-[11px] tracking-[0.16em] text-muted-foreground">
                   <List size={14} />
                   {t("matrix.mcpServers")}
@@ -339,7 +345,11 @@ export function McpMatrix({ query }: { query: string }) {
             )}
 
             {rows.map((row) => (
-              <div key={row.name} className="contents">
+              <div
+                key={row.name}
+                className="col-span-full grid"
+                style={{ gridTemplateColumns: cols }}
+              >
                 <RowLabel
                   name={row.name}
                   tag={t("matrix.mcpTag")}
@@ -402,7 +412,7 @@ export function McpMatrix({ query }: { query: string }) {
 
             {/* banda SKILLS (solo lectura; compartir/enable llegan luego) */}
             <div className="col-span-full border-border border-b bg-elevated">
-              <div className="sticky left-0 flex w-fit items-center gap-3 px-4 py-2 will-change-transform">
+              <div className="sticky left-0 flex w-fit items-center gap-3 px-4 py-2">
                 <span className="flex items-center gap-2.5 font-semibold text-[11px] tracking-[0.16em] text-muted-foreground">
                   <Sparkles size={14} />
                   {t("matrix.skills")}
@@ -412,7 +422,11 @@ export function McpMatrix({ query }: { query: string }) {
             </div>
 
             {skillRows.map((row) => (
-              <div key={row.name} className="contents">
+              <div
+                key={row.name}
+                className="col-span-full grid"
+                style={{ gridTemplateColumns: cols }}
+              >
                 <RowLabel
                   name={row.name}
                   tag={t("matrix.skillTag")}
@@ -475,7 +489,7 @@ export function McpMatrix({ query }: { query: string }) {
 
             {/* banda CONFIG (solo lectura) */}
             <div className="col-span-full border-border border-b bg-elevated">
-              <div className="sticky left-0 flex w-fit items-center gap-3 px-4 py-2 will-change-transform">
+              <div className="sticky left-0 flex w-fit items-center gap-3 px-4 py-2">
                 <span className="flex items-center gap-2.5 font-semibold text-[11px] tracking-[0.16em] text-muted-foreground">
                   <SlidersHorizontal size={14} />
                   {t("matrix.config")}
@@ -485,8 +499,12 @@ export function McpMatrix({ query }: { query: string }) {
             </div>
 
             {configRows.map((row) => (
-              <div key={row.name} className="contents">
-                <div className="sticky left-0 z-10 flex flex-col gap-0.5 border-border border-r border-b bg-surface p-4 will-change-transform">
+              <div
+                key={row.name}
+                className="col-span-full grid"
+                style={{ gridTemplateColumns: cols }}
+              >
+                <div className="sticky left-0 z-10 flex flex-col gap-0.5 border-border border-r border-b bg-surface p-4">
                   <span className="text-foreground text-[13px]">
                     {row.name === "default model" ? t("matrix.defaultModel") : t("matrix.rules")}
                   </span>
