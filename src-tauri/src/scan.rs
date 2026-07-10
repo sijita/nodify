@@ -1,6 +1,6 @@
 //! Escaneo de agentes (solo lectura) y DTOs serializables para el frontend.
 
-use nodify_adapters::{ClaudeAdapter, CodexAdapter, OpenCodeAdapter};
+use nodify_adapters::{ClaudeAdapter, CodexAdapter, KiloCodeAdapter, OpenCodeAdapter, PiAdapter};
 use nodify_core::{Adapter, CanonicalMcp, CanonicalSkill, Transport};
 use nodify_io::detect::{config_path, model_source_path, rules_path, skills_dir, AgentId, Env};
 use nodify_io::scan_skills;
@@ -74,6 +74,8 @@ pub fn scan_agents_from_env() -> Vec<AgentScan> {
         (AgentId::ClaudeCode, Box::new(ClaudeAdapter)),
         (AgentId::Codex, Box::new(CodexAdapter)),
         (AgentId::OpenCode, Box::new(OpenCodeAdapter)),
+        (AgentId::KiloCode, Box::new(KiloCodeAdapter)),
+        (AgentId::PiAgent, Box::new(PiAdapter)),
     ];
 
     agents

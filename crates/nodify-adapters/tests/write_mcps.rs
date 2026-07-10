@@ -3,7 +3,7 @@
 
 use std::collections::BTreeMap;
 
-use nodify_adapters::{ClaudeAdapter, CodexAdapter, OpenCodeAdapter};
+use nodify_adapters::{ClaudeAdapter, CodexAdapter, KiloCodeAdapter, OpenCodeAdapter, PiAdapter};
 use nodify_core::mcp::Transport;
 use nodify_core::{Adapter, CanonicalMcp, SecretValue};
 
@@ -177,5 +177,95 @@ fn opencode_env_becomes_environment_on_write() {
     assert_eq!(
         map.get("FIRECRAWL_API_KEY"),
         Some(&SecretValue::Inline("fc-x".into()))
+    );
+}
+
+// ---------- Kilo Code ----------
+
+#[test]
+fn kilo_upsert_preserves_comments_and_model() {
+    let raw = r#"{
+  // kilo global config
+  "model": "anthropic/claude-sonnet-4",
+  "mcp": {
+    "docs": { "type": "remote", "url": "https://x/mcp" }
+  }
+}"#;
+
+    let out = KiloCodeAdapter
+        .upsert_mcp(raw, &stdio("fs", "npx", &["-y", "@mcp/fs"]))
+        .unwrap();
+
+    // splice del bloque mcp: conserva comentario y model
+    assert!(out.contains("// kilo global config"));
+    assert!(out.contains("anthropic/claude-sonnet-4"));
+    // command se escribe como array (forma oficial Kilo)
+    assert!(out.contains("\"command\""));
+
+    let mcps = KiloCodeAdapter.parse_mcps(&out).unwrap();
+    let names: Vec<_> = mcps.iter().map(|m| m.name.as_str()).collect();
+    assert!(names.contains(&"docs"));
+    assert!(names.contains(&"fs"));
+    let fs = mcps.iter().find(|m| m.name == "fs").unwrap();
+    assert_eq!(fs.command.as_deref(), Some("npx"));
+    assert_eq!(fs.args, vec!["-y", "@mcp/fs"]);
+}
+
+#[test]
+fn kilo_remove_is_idempotent() {
+    let raw = r#"{ "mcp": { "a": { "type": "local", "command": ["x"] } } }"#;
+    let out = KiloCodeAdapter.remove_mcp(raw, "a").unwrap();
+    assert!(KiloCodeAdapter.parse_mcps(&out).unwrap().is_empty());
+    // quitar inexistente devuelve el texto sin cambios
+    assert_eq!(KiloCodeAdapter.remove_mcp(raw, "zzz").unwrap(), raw);
+}
+
+// ---------- Pi ----------
+
+#[test]
+fn pi_upsert_preserves_settings_and_roundtrips() {
+    let raw = r#"{
+  "$schema": "https://pi.dev/schema.json",
+  "settings": { "toolPrefix": "mcp" },
+  "mcpServers": {
+    "existing": { "command": "old" }
+  }
+}"#;
+
+    let mut m = stdio("fs", "npx", &["-y", "@mcp/fs"]);
+    m.env
+        .insert("ROOT".into(), SecretValue::Inline("/tmp".into()));
+    let out = PiAdapter.upsert_mcp(raw, &m).unwrap();
+
+    // preserva claves de nivel superior ajenas a mcpServers
+    assert!(out.contains("$schema"));
+    assert!(out.contains("toolPrefix"));
+
+    let mcps = PiAdapter.parse_mcps(&out).unwrap();
+    let names: Vec<_> = mcps.iter().map(|m| m.name.as_str()).collect();
+    assert!(names.contains(&"existing"));
+    assert!(names.contains(&"fs"));
+    let fs = mcps.iter().find(|m| m.name == "fs").unwrap();
+    assert_eq!(fs.transport, Transport::Stdio);
+    assert_eq!(
+        fs.env.get("ROOT"),
+        Some(&SecretValue::Inline("/tmp".into()))
+    );
+}
+
+#[test]
+fn pi_http_upsert_writes_type_and_url() {
+    let mut m = CanonicalMcp::http("docs", "https://x/mcp");
+    m.headers
+        .insert("Authorization".into(), SecretValue::Inline("Bearer z".into()));
+    let out = PiAdapter.upsert_mcp("", &m).unwrap();
+    assert!(out.contains("\"type\": \"http\""));
+    assert!(out.contains("https://x/mcp"));
+
+    let back = PiAdapter.parse_mcps(&out).unwrap();
+    assert_eq!(back[0].transport, Transport::Http);
+    assert_eq!(
+        back[0].headers.get("Authorization"),
+        Some(&SecretValue::Inline("Bearer z".into()))
     );
 }

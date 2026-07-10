@@ -3,7 +3,7 @@
 //!
 //!     cargo run -p nodify-adapters --example scan
 
-use nodify_adapters::{ClaudeAdapter, CodexAdapter, OpenCodeAdapter};
+use nodify_adapters::{ClaudeAdapter, CodexAdapter, KiloCodeAdapter, OpenCodeAdapter, PiAdapter};
 use nodify_core::{Adapter, Transport};
 use nodify_io::detect::{config_path, AgentId, Env};
 
@@ -20,6 +20,8 @@ fn main() {
         (AgentId::ClaudeCode, &ClaudeAdapter),
         (AgentId::Codex, &CodexAdapter),
         (AgentId::OpenCode, &OpenCodeAdapter),
+        (AgentId::KiloCode, &KiloCodeAdapter),
+        (AgentId::PiAgent, &PiAdapter),
     ];
 
     for (id, adapter) in agents {

@@ -80,6 +80,47 @@ const SEED: AgentScan[] = [
       rulesPresent: false,
     },
   },
+  {
+    id: "kilo-code",
+    configPath: "~/.config/kilo/kilo.jsonc",
+    detected: true,
+    error: null,
+    mcps: [
+      { name: "filesystem", transport: "stdio", target: "npx @mcp/fs", enabled: true, secrets: [] },
+      {
+        name: "context7",
+        transport: "http",
+        target: "https://mcp.context7.com/mcp",
+        enabled: true,
+        secrets: [{ key: "CONTEXT7_API_KEY", masked: "••••0d05", isRef: false }],
+      },
+    ],
+    skills: [
+      { name: "code-review", description: "Revisa el diff contra estándares", enabled: true },
+    ],
+    config: {
+      model: "anthropic/claude-sonnet-4",
+      rulesPath: "~/.config/kilo/AGENTS.md",
+      rulesPresent: false,
+    },
+  },
+  {
+    id: "pi",
+    configPath: "~/.pi/agent/mcp.json",
+    detected: true,
+    error: null,
+    mcps: [
+      {
+        name: "filesystem",
+        transport: "stdio",
+        target: "npx @mcp/fs",
+        enabled: null,
+        secrets: [],
+      },
+    ],
+    skills: [{ name: "tdd", description: "Desarrollo guiado por tests", enabled: true }],
+    config: { model: "claude-sonnet-5", rulesPath: "~/.pi/agent/AGENTS.md", rulesPresent: false },
+  },
 ];
 
 const state: AgentScan[] = structuredClone(SEED);
@@ -181,6 +222,8 @@ const mockRules: Record<string, string> = {
     "# Reglas globales\n\n- Escribe tests primero.\n- Commits en Conventional Commits.\n",
   codex: "# AGENTS.md\n\nUsa el estilo del repo. No toques secretos.\n",
   opencode: "",
+  "kilo-code": "",
+  pi: "# AGENTS.md\n\nPrefiere cambios pequeños y verificables.\n",
 };
 
 export function mockReadRules(agentId: string): string {
@@ -211,6 +254,8 @@ const mockProviders: Record<string, ProviderInfo[]> = {
       keyEnv: "FEATHERLESS_API_KEY",
     },
   ],
+  "kilo-code": [],
+  pi: [],
 };
 
 export function mockListProviders(agentId: string): ProviderInfo[] {

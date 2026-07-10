@@ -3,7 +3,7 @@
 
 use std::collections::BTreeMap;
 
-use nodify_adapters::{ClaudeAdapter, CodexAdapter, OpenCodeAdapter};
+use nodify_adapters::{ClaudeAdapter, CodexAdapter, KiloCodeAdapter, OpenCodeAdapter, PiAdapter};
 use nodify_core::{Adapter, SecretValue, Transport};
 
 fn env(pairs: &[(&str, &str)]) -> BTreeMap<String, SecretValue> {
@@ -146,4 +146,70 @@ fn codex_parses_stdio_and_http_with_bearer_ref() {
         figma.headers.get("Authorization"),
         Some(&SecretValue::EnvRef("FIGMA_OAUTH_TOKEN".into()))
     );
+}
+
+// ---------- Kilo Code ----------
+
+#[test]
+fn kilo_parses_local_and_remote_from_jsonc() {
+    // JSONC con comentario; `local` con command array + environment, `remote` con url.
+    let raw = r#"{
+      // kilo config
+      "model": "anthropic/claude-sonnet-4",
+      "mcp": {
+        "filesystem": {
+          "type": "local",
+          "command": ["npx", "-y", "@mcp/fs"],
+          "environment": { "ROOT": "/tmp" },
+          "enabled": true
+        },
+        "docs": { "type": "remote", "url": "https://x/mcp", "headers": { "Authorization": "Bearer abc123" } }
+      }
+    }"#;
+
+    let mcps = KiloCodeAdapter.parse_mcps(raw).unwrap();
+    assert_eq!(mcps.len(), 2);
+
+    let fs = mcps.iter().find(|m| m.name == "filesystem").unwrap();
+    assert_eq!(fs.transport, Transport::Stdio);
+    assert_eq!(fs.command.as_deref(), Some("npx"));
+    assert_eq!(fs.args, vec!["-y", "@mcp/fs"]);
+    assert_eq!(fs.env, env(&[("ROOT", "/tmp")]));
+    assert_eq!(fs.enabled, Some(true));
+
+    let docs = mcps.iter().find(|m| m.name == "docs").unwrap();
+    assert_eq!(docs.transport, Transport::Http);
+    assert_eq!(docs.url.as_deref(), Some("https://x/mcp"));
+    assert_eq!(
+        docs.headers.get("Authorization"),
+        Some(&SecretValue::Inline("Bearer abc123".into()))
+    );
+}
+
+// ---------- Pi ----------
+
+#[test]
+fn pi_parses_stdio_and_http_inferring_transport() {
+    // stdio sin `type` (inferido por command), http por `type`, y otras claves preservables.
+    let raw = r#"{
+      "settings": { "toolPrefix": "mcp" },
+      "mcpServers": {
+        "filesystem": { "command": "npx", "args": ["-y", "@mcp/fs"], "env": { "ROOT": "/tmp" } },
+        "github": { "type": "http", "url": "https://api.githubcopilot.com/mcp/" }
+      }
+    }"#;
+
+    let mcps = PiAdapter.parse_mcps(raw).unwrap();
+    assert_eq!(mcps.len(), 2);
+
+    let fs = mcps.iter().find(|m| m.name == "filesystem").unwrap();
+    assert_eq!(fs.transport, Transport::Stdio);
+    assert_eq!(fs.command.as_deref(), Some("npx"));
+    assert_eq!(fs.args, vec!["-y", "@mcp/fs"]);
+    assert_eq!(fs.env, env(&[("ROOT", "/tmp")]));
+    assert_eq!(fs.enabled, None); // Pi usa disabledServers, no flag por servidor
+
+    let gh = mcps.iter().find(|m| m.name == "github").unwrap();
+    assert_eq!(gh.transport, Transport::Http);
+    assert_eq!(gh.url.as_deref(), Some("https://api.githubcopilot.com/mcp/"));
 }

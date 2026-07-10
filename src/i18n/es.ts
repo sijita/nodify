@@ -63,6 +63,7 @@ export const es: Dict = {
     skillTag: "skill",
     configTag: "config",
     hint: "Clic en celda: MCP/Skill → eliminar (instalado) o compartir (hueco); modelo → editar.",
+    scrollHint: "Desliza para ver los {n} agentes",
     deleteMcpTitle: "Eliminar MCP",
     deleteMcpMsg: '¿Eliminar "{name}" de {agent}?',
     deleteSkillTitle: "Eliminar skill",
@@ -94,8 +95,7 @@ export const es: Dict = {
     secrets: "ENV VARS REFERENCIADAS",
     none: "—",
     presentIn: "PRESENTE EN",
-    mcpNote:
-      "Los servidores MCP no traen una descripción propia; esto es cómo está configurado.",
+    mcpNote: "Los servidores MCP no traen una descripción propia; esto es cómo está configurado.",
     loadError: "no se pudo leer SKILL.md",
   },
   addMcp: {
@@ -141,8 +141,7 @@ export const es: Dict = {
     confirmOneMsg:
       "Aplicar {n} cambio(s) a {target} desde {source}. No se elimina nada de lo que ya tenga.",
     confirmAllTitle: "Alinear todos",
-    confirmAllMsg:
-      "Propagar {n} cambio(s) de {source} a {count} agente(s). No se elimina nada.",
+    confirmAllMsg: "Propagar {n} cambio(s) de {source} a {count} agente(s). No se elimina nada.",
     doneOne: "{target}: {n} cambio(s) aplicados",
     doneAll: "{n} cambio(s) aplicados en {count} agente(s)",
     kindMcp: "mcp",
@@ -169,8 +168,7 @@ export const es: Dict = {
     diff: "diff",
     push: "push",
     pullApply: "pull + aplicar",
-    nativeOnly:
-      "> push/pull requieren la app nativa + git; el bundle sí se puede exportar aquí.",
+    nativeOnly: "> push/pull requieren la app nativa + git; el bundle sí se puede exportar aquí.",
     diffOk: "diff calculado",
     pushOk: "push OK",
     pullOk: "pull aplicado",
@@ -188,8 +186,7 @@ export const es: Dict = {
     skills: "SKILLS ({n})",
     providersIntro:
       "Proveedores definidos en la config. Las API keys no se muestran: solo el nombre de la variable de entorno que las aporta.",
-    noProviders:
-      "> este agente no declara proveedores en archivo (usa env vars).",
+    noProviders: "> este agente no declara proveedores en archivo (usa env vars).",
     key: "key:",
     rulesPlaceholder: "# Reglas del agente…",
     saveRules: "guardar",

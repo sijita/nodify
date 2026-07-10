@@ -7,7 +7,9 @@ use std::collections::BTreeMap;
 use std::path::Path;
 use std::process::Command;
 
-use nodify_adapters::{share_mcp as share_op, ClaudeAdapter, CodexAdapter, OpenCodeAdapter};
+use nodify_adapters::{
+    share_mcp as share_op, ClaudeAdapter, CodexAdapter, KiloCodeAdapter, OpenCodeAdapter, PiAdapter,
+};
 use nodify_core::mcp::Transport;
 use nodify_core::{diff_bundles, Adapter, CanonicalMcp, DiffEntry, SecretValue, SyncBundle};
 use nodify_io::detect::AgentId;
@@ -64,6 +66,8 @@ fn adapter_for(id: &str) -> Result<(AgentId, Box<dyn Adapter>), String> {
         "claude-code" => Ok((AgentId::ClaudeCode, Box::new(ClaudeAdapter))),
         "codex" => Ok((AgentId::Codex, Box::new(CodexAdapter))),
         "opencode" => Ok((AgentId::OpenCode, Box::new(OpenCodeAdapter))),
+        "kilo-code" => Ok((AgentId::KiloCode, Box::new(KiloCodeAdapter))),
+        "pi" => Ok((AgentId::PiAgent, Box::new(PiAdapter))),
         other => Err(format!("agente desconocido: {other}")),
     }
 }
@@ -193,6 +197,8 @@ fn build_bundle() -> SyncBundle {
         (AgentId::ClaudeCode, "claude-code"),
         (AgentId::Codex, "codex"),
         (AgentId::OpenCode, "opencode"),
+        (AgentId::KiloCode, "kilo-code"),
+        (AgentId::PiAgent, "pi"),
     ];
     let mut entries = Vec::new();
     for (id, id_str) in agents {

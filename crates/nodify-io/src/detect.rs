@@ -9,6 +9,8 @@ pub enum AgentId {
     ClaudeCode,
     Codex,
     OpenCode,
+    KiloCode,
+    PiAgent,
 }
 
 /// Snapshot de las variables de entorno relevantes. `None` = no definida.
@@ -48,6 +50,10 @@ pub fn config_path(agent: AgentId, env: &Env) -> PathBuf {
                 .unwrap_or_else(|| format!("{}/.config", env.home));
             PathBuf::from(base).join("opencode").join("opencode.json")
         }
+        // Kilo Code CLI: `~/.config/kilo/kilo.jsonc` (JSONC, clave `mcp`). Respeta XDG.
+        AgentId::KiloCode => kilo_dir(env).join("kilo.jsonc"),
+        // Pi (pi.dev): los MCP viven en `~/.pi/agent/mcp.json` (clave `mcpServers`).
+        AgentId::PiAgent => pi_agent_dir(env).join("mcp.json"),
     }
 }
 
@@ -75,12 +81,28 @@ fn opencode_dir(env: &Env) -> PathBuf {
     PathBuf::from(base).join("opencode")
 }
 
+fn kilo_dir(env: &Env) -> PathBuf {
+    let base = env
+        .xdg_config_home
+        .clone()
+        .unwrap_or_else(|| format!("{}/.config", env.home));
+    PathBuf::from(base).join("kilo")
+}
+
+/// Directorio de config a nivel usuario de Pi (pi.dev): `~/.pi/agent`.
+fn pi_agent_dir(env: &Env) -> PathBuf {
+    PathBuf::from(&env.home).join(".pi").join("agent")
+}
+
 /// Archivo que contiene el **modelo por defecto** del agente. Ojo: en Claude es
 /// `settings.json` (distinto del archivo de MCPs); en Codex/OpenCode es el mismo config.
 pub fn model_source_path(agent: AgentId, env: &Env) -> PathBuf {
     match agent {
         AgentId::ClaudeCode => claude_dir(env).join("settings.json"),
-        AgentId::Codex | AgentId::OpenCode => config_path(agent, env),
+        // Pi guarda `defaultModel` en un archivo aparte del de MCPs.
+        AgentId::PiAgent => pi_agent_dir(env).join("settings.json"),
+        // Codex/OpenCode/Kilo tienen el modelo en el mismo archivo de config.
+        AgentId::Codex | AgentId::OpenCode | AgentId::KiloCode => config_path(agent, env),
     }
 }
 
@@ -90,6 +112,8 @@ pub fn rules_path(agent: AgentId, env: &Env) -> PathBuf {
         AgentId::ClaudeCode => claude_dir(env).join("CLAUDE.md"),
         AgentId::Codex => codex_dir(env).join("AGENTS.md"),
         AgentId::OpenCode => opencode_dir(env).join("AGENTS.md"),
+        AgentId::KiloCode => kilo_dir(env).join("AGENTS.md"),
+        AgentId::PiAgent => pi_agent_dir(env).join("AGENTS.md"),
     }
 }
 
@@ -113,6 +137,8 @@ pub fn skills_dir(agent: AgentId, env: &Env) -> PathBuf {
                 .unwrap_or_else(|| format!("{}/.config", env.home));
             PathBuf::from(base).join("opencode").join("skills")
         }
+        AgentId::KiloCode => kilo_dir(env).join("skills"),
+        AgentId::PiAgent => pi_agent_dir(env).join("skills"),
     }
 }
 
@@ -208,6 +234,60 @@ mod tests {
         assert_eq!(
             skills_dir(AgentId::OpenCode, &env),
             PathBuf::from("/home/u/.config/opencode/skills")
+        );
+    }
+
+    #[test]
+    fn kilo_paths_use_xdg_config() {
+        let env = base_env();
+        assert_eq!(
+            config_path(AgentId::KiloCode, &env),
+            PathBuf::from("/home/u/.config/kilo/kilo.jsonc")
+        );
+        // El modelo de Kilo vive en el mismo archivo de config.
+        assert_eq!(
+            model_source_path(AgentId::KiloCode, &env),
+            PathBuf::from("/home/u/.config/kilo/kilo.jsonc")
+        );
+        assert_eq!(
+            rules_path(AgentId::KiloCode, &env),
+            PathBuf::from("/home/u/.config/kilo/AGENTS.md")
+        );
+        assert_eq!(
+            skills_dir(AgentId::KiloCode, &env),
+            PathBuf::from("/home/u/.config/kilo/skills")
+        );
+    }
+
+    #[test]
+    fn kilo_respects_xdg_config_home() {
+        let mut env = base_env();
+        env.xdg_config_home = Some("/xdg".into());
+        assert_eq!(
+            config_path(AgentId::KiloCode, &env),
+            PathBuf::from("/xdg/kilo/kilo.jsonc")
+        );
+    }
+
+    #[test]
+    fn pi_paths_split_mcp_and_model() {
+        let env = base_env();
+        // Los MCP y el modelo viven en archivos distintos bajo ~/.pi/agent.
+        assert_eq!(
+            config_path(AgentId::PiAgent, &env),
+            PathBuf::from("/home/u/.pi/agent/mcp.json")
+        );
+        assert_eq!(
+            model_source_path(AgentId::PiAgent, &env),
+            PathBuf::from("/home/u/.pi/agent/settings.json")
+        );
+        assert_eq!(
+            rules_path(AgentId::PiAgent, &env),
+            PathBuf::from("/home/u/.pi/agent/AGENTS.md")
+        );
+        assert_eq!(
+            skills_dir(AgentId::PiAgent, &env),
+            PathBuf::from("/home/u/.pi/agent/skills")
         );
     }
 }

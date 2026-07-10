@@ -23,8 +23,7 @@ export const en = {
     scanning: "SCANNING",
     tagline: "agent control center",
     filter: "Filter config…",
-    browserDemo:
-      "> browser preview · DEMO data (the real backend only runs in the native app)",
+    browserDemo: "> browser preview · DEMO data (the real backend only runs in the native app)",
   },
   nav: {
     matrix: "MATRIX",
@@ -60,6 +59,7 @@ export const en = {
     skillTag: "skill",
     configTag: "config",
     hint: "Click a cell: MCP/Skill → remove (installed) or share (empty); model → edit.",
+    scrollHint: "Scroll to see all {n} agents",
     deleteMcpTitle: "Remove MCP",
     deleteMcpMsg: 'Remove "{name}" from {agent}?',
     deleteSkillTitle: "Remove skill",
@@ -138,8 +138,7 @@ export const en = {
     confirmOneMsg:
       "Apply {n} change(s) to {target} from {source}. Nothing it already has will be removed.",
     confirmAllTitle: "Align all",
-    confirmAllMsg:
-      "Propagate {n} change(s) from {source} to {count} agent(s). Nothing is removed.",
+    confirmAllMsg: "Propagate {n} change(s) from {source} to {count} agent(s). Nothing is removed.",
     doneOne: "{target}: {n} change(s) applied",
     doneAll: "{n} change(s) applied across {count} agent(s)",
     kindMcp: "mcp",
@@ -166,8 +165,7 @@ export const en = {
     diff: "diff",
     push: "push",
     pullApply: "pull + apply",
-    nativeOnly:
-      "> push/pull require the native app + git; the bundle can be exported here.",
+    nativeOnly: "> push/pull require the native app + git; the bundle can be exported here.",
     diffOk: "diff computed",
     pushOk: "push OK",
     pullOk: "pull applied",
