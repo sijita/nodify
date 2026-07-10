@@ -160,11 +160,11 @@ export const en = {
   sync: {
     title: "SYNC",
     intro:
-      "Portable canonical bundle, with no secret values (references only). Manual push/pull against a GitHub repo, with a preview diff.",
+      "Portable canonical bundle, with no secret values (references only). Manual push/pull against a GitHub repo, with a preview diff. Paste a repo URL (cloned on demand) or a local path.",
     bundle: "BUNDLE",
     regenerate: "regenerate",
     repository: "REPOSITORY",
-    repoPlaceholder: "/path/to/your/git-repo",
+    repoPlaceholder: "https://github.com/you/repo.git or /path/to/repo",
     diff: "diff",
     push: "push",
     pullApply: "pull + apply",

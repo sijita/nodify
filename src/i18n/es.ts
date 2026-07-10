@@ -163,11 +163,11 @@ export const es: Dict = {
   sync: {
     title: "SYNC",
     intro:
-      "Bundle canónico portable, sin valores de secretos (solo referencias). Push/Pull manual contra un repo de GitHub, con diff previo.",
+      "Bundle canónico portable, sin valores de secretos (solo referencias). Push/Pull manual contra un repo de GitHub, con diff previo. Pega la URL de un repo (se clona al vuelo) o una ruta local.",
     bundle: "BUNDLE",
     regenerate: "regenerar",
     repository: "REPOSITORIO",
-    repoPlaceholder: "/ruta/a/tu/repo-git",
+    repoPlaceholder: "https://github.com/tu/repo.git o /ruta/al/repo",
     diff: "diff",
     push: "push",
     pullApply: "pull + aplicar",

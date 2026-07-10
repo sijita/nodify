@@ -4,7 +4,7 @@
 //! leer archivo → operar → escritura segura.
 
 use std::collections::BTreeMap;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use nodify_adapters::{
@@ -254,35 +254,109 @@ fn git(repo_dir: &str, args: &[&str]) -> Result<(), String> {
     Ok(())
 }
 
+/// `true` si el destino de sync parece una URL de repo remoto (en vez de una ruta local).
+fn is_remote_url(s: &str) -> bool {
+    let s = s.trim();
+    s.starts_with("http://")
+        || s.starts_with("https://")
+        || s.starts_with("git@")
+        || s.starts_with("ssh://")
+}
+
+/// Nombre de carpeta estable y legible derivado de la URL (sin protocolo ni `.git`).
+fn cache_key(url: &str) -> String {
+    let s = url.trim().trim_end_matches(".git");
+    let s = s.split("://").last().unwrap_or(s); // quita el protocolo
+    let s = s.replace("git@", "").replace(':', "/"); // git@host:owner/repo → host/owner/repo
+    s.chars()
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || matches!(c, '.' | '-' | '_') {
+                c
+            } else {
+                '-'
+            }
+        })
+        .collect()
+}
+
+/// Directorio de caché donde Nodify clona los repos de sync remotos. Nodify es el único
+/// dueño de este árbol (no hay ediciones manuales), por eso se puede `reset --hard`.
+fn sync_cache_dir(url: &str) -> PathBuf {
+    PathBuf::from(current_env().home)
+        .join(".nodify")
+        .join("sync")
+        .join(cache_key(url))
+}
+
+fn git_clone(url: &str, dest: &str) -> Result<(), String> {
+    let out = Command::new("git")
+        .args(["clone", url, dest])
+        .output()
+        .map_err(|e| format!("git no disponible: {e}"))?;
+    if !out.status.success() {
+        return Err(String::from_utf8_lossy(&out.stderr).trim().to_string());
+    }
+    Ok(())
+}
+
+/// Resuelve el destino de sync a una ruta local utilizable. Si es una ruta local, la
+/// devuelve tal cual (comportamiento previo). Si es una URL, clona el repo en la caché
+/// la primera vez y lo pone al día con el remoto (`fetch` + `reset --hard`) las siguientes,
+/// devolviendo la ruta de la copia local. La autenticación la aporta el `git` del sistema.
+fn resolve_repo(repo: &str) -> Result<String, String> {
+    if !is_remote_url(repo) {
+        return Ok(repo.to_string());
+    }
+    let url = repo.trim();
+    let dir = sync_cache_dir(url);
+    let dir_str = dir.display().to_string();
+    if dir.join(".git").exists() {
+        git(&dir_str, &["fetch", "--prune", "origin"])?;
+        // Alinea la copia local con el remoto; la caché es de uso exclusivo de Nodify.
+        git(&dir_str, &["reset", "--hard", "@{u}"])?;
+    } else {
+        if let Some(parent) = dir.parent() {
+            std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+        }
+        git_clone(url, &dir_str)?;
+    }
+    Ok(dir_str)
+}
+
 /// Bundle canónico actual como JSON (para ver/exportar).
 #[tauri::command]
 pub fn export_bundle() -> Result<String, String> {
     serde_json::to_string_pretty(&build_bundle()).map_err(|e| e.to_string())
 }
 
-/// Diff del bundle del repo frente al estado local (qué cambiaría un Pull).
+/// Diff del bundle del repo frente al estado local (qué cambiaría un Pull). Acepta una
+/// ruta local o una URL de repo (que se clona/actualiza en la caché).
 #[tauri::command]
 pub fn sync_status(repo_dir: String) -> Result<Vec<DiffEntry>, String> {
-    let incoming = read_repo_bundle(&repo_dir)?;
+    let dir = resolve_repo(&repo_dir)?;
+    let incoming = read_repo_bundle(&dir)?;
     Ok(diff_bundles(&build_bundle(), &incoming))
 }
 
-/// Push: escribe el bundle local en el repo y hace commit + push (git real).
+/// Push: escribe el bundle local en el repo y hace commit + push (git real). Acepta ruta
+/// local o URL de repo.
 #[tauri::command]
 pub fn sync_push(repo_dir: String) -> Result<(), String> {
+    let dir = resolve_repo(&repo_dir)?;
     let bundle = serde_json::to_string_pretty(&build_bundle()).map_err(|e| e.to_string())?;
-    let path = Path::new(&repo_dir).join(BUNDLE_FILE);
+    let path = Path::new(&dir).join(BUNDLE_FILE);
     std::fs::write(&path, bundle).map_err(|e| e.to_string())?;
-    git(&repo_dir, &["add", BUNDLE_FILE])?;
+    git(&dir, &["add", BUNDLE_FILE])?;
     // commit puede fallar si no hay cambios; se ignora ese caso concreto
-    let _ = git(&repo_dir, &["commit", "-m", "nodify: sync bundle"]);
-    git(&repo_dir, &["push"])
+    let _ = git(&dir, &["commit", "-m", "nodify: sync bundle"]);
+    git(&dir, &["push"])
 }
 
-/// Pull: trae el repo y aplica el bundle al dispositivo actual.
+/// Pull: trae el repo y aplica el bundle al dispositivo actual. Acepta ruta local o URL.
 #[tauri::command]
 pub fn sync_pull(repo_dir: String) -> Result<(), String> {
-    git(&repo_dir, &["pull", "--ff-only"])?;
-    let incoming = read_repo_bundle(&repo_dir)?;
+    let dir = resolve_repo(&repo_dir)?;
+    git(&dir, &["pull", "--ff-only"])?;
+    let incoming = read_repo_bundle(&dir)?;
     apply_bundle(&incoming)
 }

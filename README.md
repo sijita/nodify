@@ -352,6 +352,11 @@ Nodify puede replicar tu configuración entre máquinas a través de un repo Git
 3. **Pull**: `git pull --ff-only` y **aplica** el bundle a los agentes locales (escritura quirúrgica).
 4. **Diff**: antes de aplicar, ves qué cambia (`+` / `-` / `~`).
 
+Puedes indicar el repo como una **URL** (`https://github.com/tu/repo.git`, `git@…`) —Nodify lo
+clona al vuelo en una caché local (`~/.nodify/sync/`) y la mantiene al día— o como una **ruta
+local** ya clonada. La autenticación (push / repos privados) la aporta el `git` de tu sistema;
+Nodify no pide ni guarda tokens.
+
 En el preview de navegador el bundle se puede exportar (demo); `push`/`pull` requieren la app
 nativa + `git` instalado.
 
