@@ -94,6 +94,21 @@ fn pi_agent_dir(env: &Env) -> PathBuf {
     PathBuf::from(&env.home).join(".pi").join("agent")
 }
 
+/// Directorio "raíz" de instalación del agente. Existe desde el primer uso (login,
+/// onboarding, primera sesión), **antes** de que el usuario configure su primer MCP.
+/// Se usa para decidir si un agente está "detectado" sin exigir que `config_path` ya
+/// exista: algunos agentes (p.ej. Pi) no crean su archivo de MCPs hasta que se añade
+/// el primer servidor, aunque el agente ya esté instalado y en uso.
+pub fn agent_root(agent: AgentId, env: &Env) -> PathBuf {
+    match agent {
+        AgentId::ClaudeCode => claude_dir(env),
+        AgentId::Codex => codex_dir(env),
+        AgentId::OpenCode => opencode_dir(env),
+        AgentId::KiloCode => kilo_dir(env),
+        AgentId::PiAgent => pi_agent_dir(env),
+    }
+}
+
 /// Archivo que contiene el **modelo por defecto** del agente. Ojo: en Claude es
 /// `settings.json` (distinto del archivo de MCPs); en Codex/OpenCode es el mismo config.
 pub fn model_source_path(agent: AgentId, env: &Env) -> PathBuf {
@@ -288,6 +303,25 @@ mod tests {
         assert_eq!(
             skills_dir(AgentId::PiAgent, &env),
             PathBuf::from("/home/u/.pi/agent/skills")
+        );
+    }
+
+    #[test]
+    fn agent_root_differs_from_config_path_when_agent_splits_files() {
+        let env = base_env();
+        // Pi separa `agent_root` (~/.pi/agent) de `config_path` (~/.pi/agent/mcp.json,
+        // que puede no existir aún si el usuario no configuró ningún MCP).
+        assert_eq!(
+            agent_root(AgentId::PiAgent, &env),
+            PathBuf::from("/home/u/.pi/agent")
+        );
+        assert_eq!(
+            agent_root(AgentId::ClaudeCode, &env),
+            PathBuf::from("/home/u/.claude")
+        );
+        assert_eq!(
+            agent_root(AgentId::KiloCode, &env),
+            PathBuf::from("/home/u/.config/kilo")
         );
     }
 }

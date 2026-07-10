@@ -2,7 +2,9 @@
 
 use nodify_adapters::{ClaudeAdapter, CodexAdapter, KiloCodeAdapter, OpenCodeAdapter, PiAdapter};
 use nodify_core::{Adapter, CanonicalMcp, CanonicalSkill, Transport};
-use nodify_io::detect::{config_path, model_source_path, rules_path, skills_dir, AgentId, Env};
+use nodify_io::detect::{
+    agent_root, config_path, model_source_path, rules_path, skills_dir, AgentId, Env,
+};
 use nodify_io::scan_skills;
 use serde::Serialize;
 
@@ -97,10 +99,14 @@ fn scan_one(id: AgentId, adapter: &dyn Adapter, env: &Env) -> AgentScan {
     let raw = match std::fs::read_to_string(&path) {
         Ok(s) => s,
         Err(_) => {
+            // El archivo de MCPs puede no existir aún aunque el agente esté instalado
+            // (p.ej. Pi no crea `mcp.json` hasta que se configura el primer servidor).
+            // Se considera "detectado" si al menos existe el directorio de instalación.
+            let detected = agent_root(id, env).exists();
             return AgentScan {
                 id: adapter.id().to_string(),
                 config_path: path_str,
-                detected: false,
+                detected,
                 error: None,
                 mcps: Vec::new(),
                 skills,
