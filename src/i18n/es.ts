@@ -158,6 +158,7 @@ export const es: Dict = {
     value: "Valor…",
     setClaude: "Guardar en Claude",
     written: "{key} → escrito en Claude (settings.env)",
+    shellOnly: "se lee del shell / auth.json",
   },
   sync: {
     title: "SYNC",

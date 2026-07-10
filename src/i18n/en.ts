@@ -155,6 +155,7 @@ export const en = {
     value: "Value…",
     setClaude: "Save to Claude",
     written: "{key} → written to Claude (settings.env)",
+    shellOnly: "read from the shell / auth.json",
   },
   sync: {
     title: "SYNC",

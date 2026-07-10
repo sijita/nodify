@@ -84,17 +84,30 @@ export function SecretsPanel() {
                 </Badge>
               ))}
             </div>
-            <Input
-              type="password"
-              size="sm"
-              placeholder={t("secrets.value")}
-              value={values[key] ?? ""}
-              onChange={(e) => setValues((v) => ({ ...v, [key]: e.target.value }))}
-              className="w-40"
-            />
-            <Button variant="accent" size="sm" onClick={() => apply(key)} disabled={!values[key]}>
-              {t("secrets.setClaude")}
-            </Button>
+            {refs.includes("claude-code") ? (
+              <>
+                <Input
+                  type="password"
+                  size="sm"
+                  placeholder={t("secrets.value")}
+                  value={values[key] ?? ""}
+                  onChange={(e) => setValues((v) => ({ ...v, [key]: e.target.value }))}
+                  className="w-40"
+                />
+                <Button
+                  variant="accent"
+                  size="sm"
+                  onClick={() => apply(key)}
+                  disabled={!values[key]}
+                >
+                  {t("secrets.setClaude")}
+                </Button>
+              </>
+            ) : (
+              <span className="font-sans text-[11px] text-faint italic">
+                {t("secrets.shellOnly")}
+              </span>
+            )}
           </div>
         ))}
       </Card>
