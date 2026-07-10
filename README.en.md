@@ -12,11 +12,15 @@
 
 </div>
 
+<p align="center">
+  <img src="docs/screenshot.png" alt="Nodify — the config × agent matrix" width="820" />
+</p>
+
 ---
 
 Nodify is a desktop app that detects, reads and edits —safely— the configuration of
-**Claude Code**, **Codex** and **OpenCode** from a single place: their MCPs, their Skills,
-their default model, their rules, their providers and their API keys. And it
+**Claude Code**, **Codex**, **OpenCode**, **Kilo Code** and **Pi** from a single place: their
+MCPs, their Skills, their default model, their rules, their providers and their API keys. And it
 **syncs them across your devices** via a Git repository.
 
 Built with **Tauri v2** (native window), a GUI-less **Rust core** (headless-testable) and a
@@ -75,6 +79,8 @@ Every AI coding agent stores its configuration in a different format, at a diffe
 | Claude Code | `~/.claude.json`, `~/.claude/`   | JSON          |
 | Codex       | `~/.codex/config.toml`           | TOML          |
 | OpenCode    | `~/.config/opencode/opencode.json(c)` | JSON / JSONC |
+| Kilo Code   | `~/.config/kilo/kilo.jsonc`      | JSONC         |
+| Pi          | `~/.pi/agent/mcp.json`, `~/.pi/agent/settings.json` | JSON |
 
 If you use more than one, keeping the same MCP, the same Skill or the same model across all of
 them is manual work, error-prone and hard to replicate between machines. Nodify solves exactly
@@ -136,8 +142,12 @@ Monochrome "ink-on-paper" design system, retro/hacker but modern:
 - **Light / dark theme** with a toggle (☾/☀), persisted.
 - **Bilingual ES/EN** with a toggle in the top bar: lightweight in-house i18n (Zustand + typed
   dictionaries), detects the browser language and saves your preference.
-- **Official agent logos** (via [simple-icons](https://simpleicons.org) and [svgl.app](https://svgl.app),
-  monochrome with `currentColor`) for Claude Code, OpenCode, and Codex.
+- **Official agent logos** (via [simple-icons](https://simpleicons.org), [svgl.app](https://svgl.app)
+  and [LobeHub](https://lobehub.com/icons), monochrome with `currentColor`) for Claude Code, Codex,
+  OpenCode, Kilo Code and Pi.
+- **Reorderable, hideable columns**: choose which agents to show and in which order (▲▼ arrows in
+  the agents menu). With many agents the matrix scrolls horizontally while the first column stays
+  pinned. It's a view-only preference: Nodify keeps reading/writing normally.
 - **Animations** — subtle and snappy — with [`motion`](https://motion.dev) (Framer Motion): sliding
   dock, section transitions, matrix cells that "pop" on mutation, the ALIGN panel cascade, the SCAN
   button. Respects `prefers-reduced-motion`.
@@ -152,15 +162,15 @@ Monochrome "ink-on-paper" design system, retro/hacker but modern:
 Not all agents support the same fields. Nodify translates what it can and preserves what it
 doesn't understand. Summary (detail in [docs/canonical-model.md](docs/canonical-model.md)):
 
-| Capability                | Claude Code | Codex | OpenCode |
-| ------------------------- | :---------: | :---: | :------: |
-| stdio MCPs                | ✓           | ✓     | ✓        |
-| HTTP/SSE MCPs             | ✓           | ✓\*   | ✓        |
-| Default model             | ✓           | ✓     | ✓        |
-| Rules (memory)            | ✓ `CLAUDE.md` | ✓ `AGENTS.md` | ✓ `AGENTS.md` |
-| Providers (read)          | —           | ✓     | ✓        |
-| Write API key value       | ✓ `settings.env` | shell/`auth.json` | shell/`auth.json` |
-| Skills                    | ✓           | ✓     | ✓        |
+| Capability                | Claude Code | Codex | OpenCode | Kilo Code | Pi |
+| ------------------------- | :---------: | :---: | :------: | :-------: | :-: |
+| stdio MCPs                | ✓           | ✓     | ✓        | ✓         | ✓  |
+| HTTP/SSE MCPs             | ✓           | ✓\*   | ✓        | ✓         | ✓  |
+| Default model             | ✓           | ✓     | ✓        | ✓         | ✓  |
+| Rules (memory)            | ✓ `CLAUDE.md` | ✓ `AGENTS.md` | ✓ `AGENTS.md` | ✓ `AGENTS.md` | ✓ `AGENTS.md` |
+| Providers (read)          | —           | ✓     | ✓        | —         | —  |
+| Write API key value       | ✓ `settings.env` | shell/`auth.json` | shell/`auth.json` | shell | shell |
+| Skills                    | ✓           | ✓     | ✓        | ✓         | ✓  |
 
 \* Subject to the agent's version/support; see [docs/adapters/](docs/adapters/).
 
@@ -201,7 +211,7 @@ The heart of Nodify ([ADR-0003](docs/adr/0003-canonical-model-with-adapters.md))
         ◀─────────── │  parse_providers / set_env   │  ◀───────────
    (surgical         │  remove_mcp                  │
     write)           └──────────────────────────────┘
-                       claude.rs · codex.rs · opencode.rs
+             claude.rs · codex.rs · opencode.rs · kilocode.rs · piagent.rs
 ```
 
 Adding a new agent = writing **one** adapter; nothing else changes.
@@ -310,7 +320,7 @@ npm run tauri dev
 nodify/
 ├── crates/                     # Rust core (headless workspace, testable)
 │   ├── nodify-core/            #   canonical model, Adapter trait, sync bundle
-│   ├── nodify-adapters/        #   claude.rs · codex.rs · opencode.rs · ops.rs
+│   ├── nodify-adapters/        #   claude.rs · codex.rs · opencode.rs · kilocode.rs · piagent.rs · ops.rs
 │   └── nodify-io/              #   detect.rs (paths) · write.rs (safe_write) · skills.rs
 ├── src-tauri/                  # Tauri shell: commands exposing the core (mutate.rs, scan.rs)
 ├── src/                        # React frontend (screaming architecture by feature)
@@ -362,8 +372,9 @@ Windows. The core and the frontend preview work the same on any OS.
 Implement the `Adapter` trait in a new file inside `nodify-adapters` and register it in `all()`.
 The rest of the system (UI, sync, safe writes) consumes it with no changes.
 
-**Do I need all three agents installed?**
-No. Nodify detects the ones you have present and shows the rest as missing.
+**Do I need all the agents installed?**
+No. Nodify detects the ones you have present and shows the rest as missing. You can hide the
+ones you don't use from the agents menu.
 
 ---
 

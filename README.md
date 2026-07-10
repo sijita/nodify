@@ -12,11 +12,15 @@
 
 </div>
 
+<p align="center">
+  <img src="docs/screenshot.png" alt="Nodify — la matriz de configuración × agente" width="820" />
+</p>
+
 ---
 
 Nodify es una app de escritorio que detecta, lee y edita —de forma segura— la
-configuración de **Claude Code**, **Codex** y **OpenCode** desde un único lugar:
-sus MCPs, sus Skills, su modelo por defecto, sus reglas, sus proveedores y sus
+configuración de **Claude Code**, **Codex**, **OpenCode**, **Kilo Code** y **Pi** desde un
+único lugar: sus MCPs, sus Skills, su modelo por defecto, sus reglas, sus proveedores y sus
 API keys. Y las **sincroniza entre tus dispositivos** vía un repositorio Git.
 
 Construida con **Tauri v2** (ventana nativa), un **core en Rust** sin GUI (testeable
@@ -76,6 +80,8 @@ ruta distinta:
 | Claude Code | `~/.claude.json`, `~/.claude/`   | JSON          |
 | Codex       | `~/.codex/config.toml`           | TOML          |
 | OpenCode    | `~/.config/opencode/opencode.json(c)` | JSON / JSONC |
+| Kilo Code   | `~/.config/kilo/kilo.jsonc`      | JSONC         |
+| Pi          | `~/.pi/agent/mcp.json`, `~/.pi/agent/settings.json` | JSON |
 
 Si usas más de uno, mantener el mismo MCP, la misma Skill o el mismo modelo en todos
 es un trabajo manual, propenso a errores y difícil de replicar entre máquinas. Nodify
@@ -138,8 +144,12 @@ Sistema de diseño monocromo "tinta sobre papel", retro/hacker pero moderno:
 - **Tema claro / oscuro** con toggle (☾/☀), persistido.
 - **Bilingüe ES/EN** con toggle en la barra superior: i18n propio y ligero (Zustand + diccionarios
   tipados), detecta el idioma del navegador y guarda tu preferencia.
-- **Logos oficiales de los agentes** (vía [simple-icons](https://simpleicons.org) y [svgl.app](https://svgl.app),
-  monocromos con `currentColor`) para Claude Code, OpenCode y Codex.
+- **Logos oficiales de los agentes** (vía [simple-icons](https://simpleicons.org),
+  [svgl.app](https://svgl.app) y [LobeHub](https://lobehub.com/icons), monocromos con
+  `currentColor`) para Claude Code, Codex, OpenCode, Kilo Code y Pi.
+- **Columnas reordenables y ocultables**: elige qué agentes ver y en qué orden (flechas ▲▼ en
+  el menú de agentes). Con muchos agentes la matriz hace **scroll horizontal** manteniendo fija
+  la primera columna. Es solo preferencia de vista: Nodify sigue leyendo/escribiendo igual.
 - **Animaciones** sutiles y snappy con [`motion`](https://motion.dev) (Framer Motion): dock deslizante,
   transiciones de sección, celdas de la matriz que "hacen pop" al mutar, cascada del panel ALIGN,
   botón SCAN. Respeta `prefers-reduced-motion`.
@@ -154,15 +164,15 @@ Sistema de diseño monocromo "tinta sobre papel", retro/hacker pero moderno:
 No todos los agentes soportan los mismos campos. Nodify traduce lo que se puede y
 preserva lo que no entiende. Resumen (detalle en [docs/canonical-model.md](docs/canonical-model.md)):
 
-| Capacidad                 | Claude Code | Codex | OpenCode |
-| ------------------------- | :---------: | :---: | :------: |
-| MCPs stdio                | ✓           | ✓     | ✓        |
-| MCPs HTTP/SSE             | ✓           | ✓\*   | ✓        |
-| Modelo por defecto        | ✓           | ✓     | ✓        |
-| Reglas (memoria)          | ✓ `CLAUDE.md` | ✓ `AGENTS.md` | ✓ `AGENTS.md` |
-| Proveedores (lectura)     | —           | ✓     | ✓        |
-| Escribir valor de API key | ✓ `settings.env` | shell/`auth.json` | shell/`auth.json` |
-| Skills                    | ✓           | ✓     | ✓        |
+| Capacidad                 | Claude Code | Codex | OpenCode | Kilo Code | Pi |
+| ------------------------- | :---------: | :---: | :------: | :-------: | :-: |
+| MCPs stdio                | ✓           | ✓     | ✓        | ✓         | ✓  |
+| MCPs HTTP/SSE             | ✓           | ✓\*   | ✓        | ✓         | ✓  |
+| Modelo por defecto        | ✓           | ✓     | ✓        | ✓         | ✓  |
+| Reglas (memoria)          | ✓ `CLAUDE.md` | ✓ `AGENTS.md` | ✓ `AGENTS.md` | ✓ `AGENTS.md` | ✓ `AGENTS.md` |
+| Proveedores (lectura)     | —           | ✓     | ✓        | —         | —  |
+| Escribir valor de API key | ✓ `settings.env` | shell/`auth.json` | shell/`auth.json` | shell | shell |
+| Skills                    | ✓           | ✓     | ✓        | ✓         | ✓  |
 
 \* Sujeto a la versión/soporte del agente; ver [docs/adapters/](docs/adapters/).
 
@@ -204,7 +214,7 @@ y un trait `Adapter` que cada agente implementa para traducir **nativo ↔ canó
         ◀─────────── │  parse_providers / set_env   │  ◀───────────
    (escritura        │  remove_mcp                  │
     quirúrgica)      └──────────────────────────────┘
-                       claude.rs · codex.rs · opencode.rs
+             claude.rs · codex.rs · opencode.rs · kilocode.rs · piagent.rs
 ```
 
 Añadir un agente nuevo = escribir **un** adaptador; nada más cambia.
@@ -313,7 +323,7 @@ npm run tauri dev
 nodify/
 ├── crates/                     # core Rust (workspace headless, testeable)
 │   ├── nodify-core/            #   modelo canónico, trait Adapter, sync bundle
-│   ├── nodify-adapters/        #   claude.rs · codex.rs · opencode.rs · ops.rs
+│   ├── nodify-adapters/        #   claude.rs · codex.rs · opencode.rs · kilocode.rs · piagent.rs · ops.rs
 │   └── nodify-io/              #   detect.rs (rutas) · write.rs (safe_write) · skills.rs
 ├── src-tauri/                  # shell Tauri: comandos que exponen el core (mutate.rs, scan.rs)
 ├── src/                        # frontend React (screaming architecture por feature)
@@ -365,8 +375,9 @@ Windows. El core y el preview del frontend funcionan igual en cualquier SO.
 Implementa el trait `Adapter` en un archivo nuevo dentro de `nodify-adapters` y regístralo en
 `all()`. El resto del sistema (UI, sync, escritura segura) lo consume sin cambios.
 
-**¿Necesito los tres agentes instalados?**
-No. Nodify detecta los que tengas presentes y muestra el resto como ausentes.
+**¿Necesito todos los agentes instalados?**
+No. Nodify detecta los que tengas presentes y muestra el resto como ausentes. Puedes ocultar
+los que no uses desde el menú de agentes.
 
 ---
 
