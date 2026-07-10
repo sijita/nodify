@@ -14,9 +14,11 @@ export const en = {
   },
   visibility: {
     button: "Agents shown",
-    title: "SHOW / HIDE AGENTS",
-    hint: "Hidden agents are only tucked away from view — Nodify keeps reading and writing their config normally.",
+    title: "AGENTS · SHOW / HIDE · ORDER",
+    hint: "Hidden agents are only tucked away from view — Nodify keeps reading and writing their config normally. Use the arrows to reorder the columns.",
     allHidden: "> all agents are hidden — use the eye icon in the top bar to show one",
+    moveUp: "Move up",
+    moveDown: "Move down",
   },
   topbar: {
     scan: "SCAN",
@@ -151,7 +153,7 @@ export const en = {
       "Environment variables referenced by MCPs and providers. The value is written to Claude (settings.env); Codex/OpenCode read them from the shell or auth.json. Nodify does not store the value.",
     none: "> no referenced variables",
     value: "Value…",
-    setClaude: "set Claude",
+    setClaude: "Save to Claude",
     written: "{key} → written to Claude (settings.env)",
   },
   sync: {

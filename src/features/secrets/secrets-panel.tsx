@@ -92,7 +92,7 @@ export function SecretsPanel() {
               onChange={(e) => setValues((v) => ({ ...v, [key]: e.target.value }))}
               className="w-40"
             />
-            <Button variant="outline" size="sm" onClick={() => apply(key)} disabled={!values[key]}>
+            <Button variant="accent" size="sm" onClick={() => apply(key)} disabled={!values[key]}>
               {t("secrets.setClaude")}
             </Button>
           </div>

@@ -16,10 +16,12 @@ export const es: Dict = {
   },
   visibility: {
     button: "Agentes visibles",
-    title: "MOSTRAR / OCULTAR AGENTES",
-    hint: "Ocultar un agente solo lo quita de la vista — Nodify sigue leyendo y escribiendo su config con normalidad.",
+    title: "AGENTES · MOSTRAR / OCULTAR · ORDEN",
+    hint: "Ocultar un agente solo lo quita de la vista — Nodify sigue leyendo y escribiendo su config con normalidad. Usa las flechas para reordenar las columnas.",
     allHidden:
       "> todos los agentes están ocultos — usa el icono del ojo en la barra superior para mostrar alguno",
+    moveUp: "Subir",
+    moveDown: "Bajar",
   },
   topbar: {
     scan: "SCAN",
@@ -154,7 +156,7 @@ export const es: Dict = {
       "Variables de entorno referenciadas por MCPs y proveedores. El valor se escribe en Claude (settings.env); Codex/OpenCode las leen del shell o auth.json. Nodify no guarda el valor.",
     none: "> sin variables referenciadas",
     value: "Valor…",
-    setClaude: "set Claude",
+    setClaude: "Guardar en Claude",
     written: "{key} → escrito en Claude (settings.env)",
   },
   sync: {

@@ -15,13 +15,20 @@ export function useAgentScan() {
 }
 
 /**
- * Como `useAgentScan`, pero excluye los agentes que el usuario ocultó (preferencia de
- * UI, ver `lib/agent-visibility`). `total` conserva el conteo real para mensajes tipo
- * "todos ocultos".
+ * Como `useAgentScan`, pero excluye los agentes que el usuario ocultó y los ordena
+ * según su preferencia (ver `lib/agent-visibility`). `total` conserva el conteo real
+ * para mensajes tipo "todos ocultos".
  */
 export function useVisibleAgents() {
   const { agents, ...rest } = useAgentScan();
   const hidden = useAgentVisibility((s) => s.hidden);
-  const visible = agents.filter((a) => !hidden.includes(a.id));
+  const order = useAgentVisibility((s) => s.order);
+  const rank = (id: string) => {
+    const i = order.indexOf(id);
+    return i < 0 ? Number.MAX_SAFE_INTEGER : i;
+  };
+  const visible = agents
+    .filter((a) => !hidden.includes(a.id))
+    .sort((a, b) => rank(a.id) - rank(b.id));
   return { agents: visible, total: agents.length, ...rest };
 }

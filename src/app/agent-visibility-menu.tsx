@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { useT } from "@/i18n";
 import { useAgentVisibility } from "@/lib/agent-visibility";
 import { AGENT_META } from "@/lib/agents";
-import { Check, Eye, EyeOff } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Eye, EyeOff } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 
@@ -15,7 +15,7 @@ import { useEffect, useRef, useState } from "react";
  */
 export function AgentVisibilityMenu() {
   const t = useT();
-  const { hidden, toggle } = useAgentVisibility();
+  const { hidden, order, toggle, move } = useAgentVisibility();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -33,7 +33,8 @@ export function AgentVisibilityMenu() {
     };
   }, [open]);
 
-  const ids = Object.keys(AGENT_META);
+  // Se listan en el orden preferido (el mismo que se refleja en las columnas).
+  const ids = order.filter((id) => id in AGENT_META);
 
   return (
     <div ref={ref} className="relative">
@@ -66,14 +67,14 @@ export function AgentVisibilityMenu() {
                 {t("visibility.title")}
               </div>
               <ul className="flex flex-col">
-                {ids.map((id) => {
+                {ids.map((id, i) => {
                   const isHidden = hidden.includes(id);
                   return (
-                    <li key={id}>
+                    <li key={id} className="flex items-center pr-1.5 hover:bg-elevated-2">
                       <button
                         type="button"
                         onClick={() => toggle(id)}
-                        className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-xs hover:bg-elevated-2"
+                        className="flex flex-1 items-center gap-2.5 px-3 py-2.5 text-left text-xs"
                       >
                         <AgentGlyph
                           id={id}
@@ -85,6 +86,28 @@ export function AgentVisibilityMenu() {
                         </span>
                         {!isHidden && <Check size={13} className="text-success" />}
                       </button>
+                      <div className="flex items-center">
+                        <button
+                          type="button"
+                          onClick={() => move(id, -1)}
+                          disabled={i === 0}
+                          aria-label={t("visibility.moveUp")}
+                          title={t("visibility.moveUp")}
+                          className="flex h-6 w-6 items-center justify-center rounded-[var(--radius-sm)] text-faint hover:bg-surface hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
+                        >
+                          <ChevronUp size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => move(id, 1)}
+                          disabled={i === ids.length - 1}
+                          aria-label={t("visibility.moveDown")}
+                          title={t("visibility.moveDown")}
+                          className="flex h-6 w-6 items-center justify-center rounded-[var(--radius-sm)] text-faint hover:bg-surface hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
+                        >
+                          <ChevronDown size={14} />
+                        </button>
+                      </div>
                     </li>
                   );
                 })}
