@@ -195,7 +195,12 @@ fn parse_one(name: &str, cfg: &Value) -> Result<CanonicalMcp, AdapterError> {
             }
             m
         }
-        other => return Err(invalid(name, &format!("tipo de transporte desconocido: {other}"))),
+        other => {
+            return Err(invalid(
+                name,
+                &format!("tipo de transporte desconocido: {other}"),
+            ))
+        }
     };
 
     // Pi gestiona el on/off por el array `disabledServers`, no por flag por servidor.

@@ -71,7 +71,11 @@ pub struct DiffEntry {
 /// Diff de `incoming` respecto a `current` (qué pasaría al aplicar `incoming`).
 pub fn diff_bundles(current: &SyncBundle, incoming: &SyncBundle) -> Vec<DiffEntry> {
     let mut out = Vec::new();
-    let mut agent_ids: Vec<&String> = current.agents.keys().chain(incoming.agents.keys()).collect();
+    let mut agent_ids: Vec<&String> = current
+        .agents
+        .keys()
+        .chain(incoming.agents.keys())
+        .collect();
     agent_ids.sort();
     agent_ids.dedup();
 
@@ -117,8 +121,10 @@ mod tests {
 
     fn mcp_with_secret() -> CanonicalMcp {
         let mut m = CanonicalMcp::stdio("fire", "npx");
-        m.env
-            .insert("FIRECRAWL_API_KEY".into(), SecretValue::Inline("fc-secret".into()));
+        m.env.insert(
+            "FIRECRAWL_API_KEY".into(),
+            SecretValue::Inline("fc-secret".into()),
+        );
         m
     }
 
@@ -145,12 +151,18 @@ mod tests {
         let current = SyncBundle::build(vec![(
             "codex".into(),
             Some("old".into()),
-            vec![CanonicalMcp::stdio("keep", "a"), CanonicalMcp::stdio("gone", "b")],
+            vec![
+                CanonicalMcp::stdio("keep", "a"),
+                CanonicalMcp::stdio("gone", "b"),
+            ],
         )]);
         let incoming = SyncBundle::build(vec![(
             "codex".into(),
             Some("new".into()),
-            vec![CanonicalMcp::stdio("keep", "CHANGED"), CanonicalMcp::stdio("added", "c")],
+            vec![
+                CanonicalMcp::stdio("keep", "CHANGED"),
+                CanonicalMcp::stdio("added", "c"),
+            ],
         )]);
 
         let changes: Vec<String> = diff_bundles(&current, &incoming)
@@ -165,7 +177,11 @@ mod tests {
 
     #[test]
     fn identical_bundles_have_no_diff() {
-        let b = SyncBundle::build(vec![("codex".into(), None, vec![CanonicalMcp::stdio("x", "y")])]);
+        let b = SyncBundle::build(vec![(
+            "codex".into(),
+            None,
+            vec![CanonicalMcp::stdio("x", "y")],
+        )]);
         assert!(diff_bundles(&b, &b).is_empty());
     }
 }

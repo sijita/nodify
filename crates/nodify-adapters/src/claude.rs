@@ -89,7 +89,9 @@ impl Adapter for ClaudeAdapter {
         let obj = root
             .as_object_mut()
             .ok_or_else(|| invalid(key, "settings.json no es un objeto"))?;
-        let env = obj.entry("env").or_insert_with(|| Value::Object(Map::new()));
+        let env = obj
+            .entry("env")
+            .or_insert_with(|| Value::Object(Map::new()));
         let emap = env
             .as_object_mut()
             .ok_or_else(|| invalid(key, "'env' no es un objeto"))?;

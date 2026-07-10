@@ -6,7 +6,10 @@ use nodify_core::Adapter;
 #[test]
 fn claude_reads_model_from_settings_json() {
     let settings = r#"{ "model": "claude-sonnet-5", "editorMode": "vim" }"#;
-    assert_eq!(ClaudeAdapter.parse_model(settings).as_deref(), Some("claude-sonnet-5"));
+    assert_eq!(
+        ClaudeAdapter.parse_model(settings).as_deref(),
+        Some("claude-sonnet-5")
+    );
     assert_eq!(ClaudeAdapter.parse_model("{}"), None);
 }
 
@@ -32,7 +35,10 @@ fn set_model_roundtrips_and_preserves_each_format() {
         .set_model(r#"{ "editorMode": "vim" }"#, "claude-opus-4-8")
         .unwrap();
     assert!(claude.contains("editorMode"));
-    assert_eq!(ClaudeAdapter.parse_model(&claude).as_deref(), Some("claude-opus-4-8"));
+    assert_eq!(
+        ClaudeAdapter.parse_model(&claude).as_deref(),
+        Some("claude-opus-4-8")
+    );
 
     // Codex: preserva comentario
     let codex = CodexAdapter
@@ -43,11 +49,17 @@ fn set_model_roundtrips_and_preserves_each_format() {
 
     // OpenCode: preserva comentario y otras claves (splice)
     let oc = OpenCodeAdapter
-        .set_model("{\n  // gen\n  \"model\": \"old\",\n  \"theme\": \"dark\"\n}", "anthropic/x")
+        .set_model(
+            "{\n  // gen\n  \"model\": \"old\",\n  \"theme\": \"dark\"\n}",
+            "anthropic/x",
+        )
         .unwrap();
     assert!(oc.contains("// gen"));
     assert!(oc.contains("\"theme\""));
-    assert_eq!(OpenCodeAdapter.parse_model(&oc).as_deref(), Some("anthropic/x"));
+    assert_eq!(
+        OpenCodeAdapter.parse_model(&oc).as_deref(),
+        Some("anthropic/x")
+    );
 }
 
 #[test]
@@ -76,16 +88,23 @@ fn kilo_reads_provider_slashed_model_from_jsonc() {
     );
     // set_model preserva comentario y otras claves (splice)
     let out = KiloCodeAdapter
-        .set_model("{\n  // gen\n  \"model\": \"old\",\n  \"theme\": \"dark\"\n}", "openai/gpt-5")
+        .set_model(
+            "{\n  // gen\n  \"model\": \"old\",\n  \"theme\": \"dark\"\n}",
+            "openai/gpt-5",
+        )
         .unwrap();
     assert!(out.contains("// gen"));
     assert!(out.contains("\"theme\""));
-    assert_eq!(KiloCodeAdapter.parse_model(&out).as_deref(), Some("openai/gpt-5"));
+    assert_eq!(
+        KiloCodeAdapter.parse_model(&out).as_deref(),
+        Some("openai/gpt-5")
+    );
 }
 
 #[test]
 fn pi_reads_default_model_and_preserves_provider() {
-    let settings = r#"{ "defaultProvider": "anthropic", "defaultModel": "claude-sonnet-4-20250514" }"#;
+    let settings =
+        r#"{ "defaultProvider": "anthropic", "defaultModel": "claude-sonnet-4-20250514" }"#;
     assert_eq!(
         PiAdapter.parse_model(settings).as_deref(),
         Some("claude-sonnet-4-20250514")

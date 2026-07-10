@@ -256,8 +256,10 @@ fn pi_upsert_preserves_settings_and_roundtrips() {
 #[test]
 fn pi_http_upsert_writes_type_and_url() {
     let mut m = CanonicalMcp::http("docs", "https://x/mcp");
-    m.headers
-        .insert("Authorization".into(), SecretValue::Inline("Bearer z".into()));
+    m.headers.insert(
+        "Authorization".into(),
+        SecretValue::Inline("Bearer z".into()),
+    );
     let out = PiAdapter.upsert_mcp("", &m).unwrap();
     assert!(out.contains("\"type\": \"http\""));
     assert!(out.contains("https://x/mcp"));

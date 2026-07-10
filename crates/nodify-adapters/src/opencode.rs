@@ -111,13 +111,12 @@ impl Adapter for OpenCodeAdapter {
     }
 
     fn set_model(&self, raw: &str, model: &str) -> Result<String, AdapterError> {
-        let rendered =
-            serde_json::to_string(&Value::String(model.to_string())).map_err(|e| {
-                AdapterError::Parse {
-                    agent: ID,
-                    source: Box::new(e),
-                }
-            })?;
+        let rendered = serde_json::to_string(&Value::String(model.to_string())).map_err(|e| {
+            AdapterError::Parse {
+                agent: ID,
+                source: Box::new(e),
+            }
+        })?;
         match value_range(raw, "model")? {
             Some((s, e)) => Ok(format!("{}{}{}", &raw[..s], rendered, &raw[e..])),
             None => {

@@ -66,13 +66,12 @@ impl Adapter for KiloCodeAdapter {
     }
 
     fn set_model(&self, raw: &str, model: &str) -> Result<String, AdapterError> {
-        let rendered =
-            serde_json::to_string(&Value::String(model.to_string())).map_err(|e| {
-                AdapterError::Parse {
-                    agent: ID,
-                    source: Box::new(e),
-                }
-            })?;
+        let rendered = serde_json::to_string(&Value::String(model.to_string())).map_err(|e| {
+            AdapterError::Parse {
+                agent: ID,
+                source: Box::new(e),
+            }
+        })?;
         match value_range(raw, "model")? {
             Some((s, e)) => Ok(format!("{}{}{}", &raw[..s], rendered, &raw[e..])),
             None => {
@@ -242,10 +241,10 @@ fn parse_one(name: &str, cfg: &Value) -> Result<CanonicalMcp, AdapterError> {
             m
         }
         "remote" => {
-            let url =
-                cfg.get("url")
-                    .and_then(Value::as_str)
-                    .ok_or_else(|| invalid(name, "transporte remote sin 'url'"))?;
+            let url = cfg
+                .get("url")
+                .and_then(Value::as_str)
+                .ok_or_else(|| invalid(name, "transporte remote sin 'url'"))?;
             let mut m = CanonicalMcp::http(name, url);
             m.headers = json_obj_to_inline_map(cfg.get("headers"));
             m

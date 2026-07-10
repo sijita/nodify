@@ -103,7 +103,11 @@ mod tests {
     #[test]
     fn scans_skills_with_frontmatter_and_dir_fallback() {
         let root = tmp();
-        make_skill(&root, "code-review", Some("---\nname: code-review\ndescription: \"Revisa\"\n---\nbody"));
+        make_skill(
+            &root,
+            "code-review",
+            Some("---\nname: code-review\ndescription: \"Revisa\"\n---\nbody"),
+        );
         make_skill(&root, "no-frontmatter", Some("# solo body"));
         make_skill(&root, "not-a-skill", None); // sin SKILL.md → ignorado
 
@@ -126,7 +130,11 @@ mod tests {
     fn copy_and_remove_skill_folder() {
         let from = tmp();
         let to = tmp();
-        make_skill(&from, "code-review", Some("---\nname: code-review\n---\nbody"));
+        make_skill(
+            &from,
+            "code-review",
+            Some("---\nname: code-review\n---\nbody"),
+        );
         // recurso extra dentro del skill
         fs::write(from.join("code-review").join("ref.md"), "x").unwrap();
 

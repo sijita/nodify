@@ -23,7 +23,10 @@ fn share_http_mcp_from_claude_to_codex_translates_format() {
     let back = CodexAdapter.parse_mcps(&codex_out).unwrap();
     let gh = back.iter().find(|m| m.name == "github").unwrap();
     assert_eq!(gh.transport, Transport::Http);
-    assert_eq!(gh.headers.get("X-Api"), Some(&SecretValue::Inline("tok123".into())));
+    assert_eq!(
+        gh.headers.get("X-Api"),
+        Some(&SecretValue::Inline("tok123".into()))
+    );
 }
 
 #[test]
@@ -46,7 +49,10 @@ fn share_stdio_mcp_from_claude_to_opencode_normalizes_command_and_env() {
     assert_eq!(fs.transport, Transport::Stdio);
     assert_eq!(fs.command.as_deref(), Some("npx"));
     assert_eq!(fs.args, vec!["-y", "@mcp/fs"]);
-    assert_eq!(fs.env.get("ROOT"), Some(&SecretValue::Inline("/data".into())));
+    assert_eq!(
+        fs.env.get("ROOT"),
+        Some(&SecretValue::Inline("/data".into()))
+    );
 }
 
 #[test]

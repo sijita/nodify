@@ -211,5 +211,8 @@ fn pi_parses_stdio_and_http_inferring_transport() {
 
     let gh = mcps.iter().find(|m| m.name == "github").unwrap();
     assert_eq!(gh.transport, Transport::Http);
-    assert_eq!(gh.url.as_deref(), Some("https://api.githubcopilot.com/mcp/"));
+    assert_eq!(
+        gh.url.as_deref(),
+        Some("https://api.githubcopilot.com/mcp/")
+    );
 }

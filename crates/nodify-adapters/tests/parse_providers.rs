@@ -15,7 +15,10 @@ fn codex_reads_model_providers() {
     assert_eq!(ps.len(), 1);
     assert_eq!(ps[0].id, "openrouter");
     assert_eq!(ps[0].name.as_deref(), Some("OpenRouter"));
-    assert_eq!(ps[0].base_url.as_deref(), Some("https://openrouter.ai/api/v1"));
+    assert_eq!(
+        ps[0].base_url.as_deref(),
+        Some("https://openrouter.ai/api/v1")
+    );
     assert_eq!(ps[0].key_env.as_deref(), Some("OPENROUTER_API_KEY"));
 }
 
@@ -34,7 +37,10 @@ fn opencode_reads_provider_block() {
     let ps = OpenCodeAdapter.parse_providers(json);
     assert_eq!(ps.len(), 1);
     assert_eq!(ps[0].id, "featherless");
-    assert_eq!(ps[0].base_url.as_deref(), Some("https://api.featherless.ai/v1"));
+    assert_eq!(
+        ps[0].base_url.as_deref(),
+        Some("https://api.featherless.ai/v1")
+    );
     assert_eq!(ps[0].key_env.as_deref(), Some("FEATHERLESS_API_KEY"));
 }
 

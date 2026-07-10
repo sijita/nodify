@@ -102,7 +102,9 @@ impl Adapter for CodexAdapter {
         };
         let mut out = Vec::new();
         for (id, item) in t.iter() {
-            let Some(p) = item.as_table_like() else { continue };
+            let Some(p) = item.as_table_like() else {
+                continue;
+            };
             let s = |k: &str| p.get(k).and_then(Item::as_str).map(str::to_string);
             out.push(nodify_core::ProviderInfo {
                 id: id.to_string(),
