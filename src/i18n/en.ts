@@ -75,6 +75,8 @@ export const en = {
     viewDetail: "View {agent} details",
     remove: "remove",
     edit: "edit",
+    copy: "copy",
+    copyRulesHint: "Copy rules from another agent",
     info: "what is this?",
   },
   info: {
@@ -174,6 +176,15 @@ export const en = {
     pullOk: "pull applied",
     changesOnApply: "CHANGES ON APPLY ({n})",
     noChanges: "> no changes (up to date)",
+  },
+  copyRules: {
+    title: "Copy rules to {agent}",
+    pick: "CHOOSE WHICH AGENT TO COPY FROM",
+    none: "No other agent has rules to copy.",
+    overwrite: "{agent} already has rules; copying will overwrite them.",
+    preview: "PREVIEW",
+    selectPrompt: "Select an agent to preview its rules.",
+    copy: "Copy rules",
   },
   agent: {
     detected: "detected",

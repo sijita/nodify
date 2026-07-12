@@ -79,6 +79,8 @@ export const es: Dict = {
     viewDetail: "Ver detalle de {agent}",
     remove: "eliminar",
     edit: "editar",
+    copy: "copiar",
+    copyRulesHint: "Copiar reglas desde otro agente",
     info: "¿qué es esto?",
   },
   info: {
@@ -177,6 +179,15 @@ export const es: Dict = {
     pullOk: "pull aplicado",
     changesOnApply: "CAMBIOS AL APLICAR ({n})",
     noChanges: "> sin cambios (todo al día)",
+  },
+  copyRules: {
+    title: "Copiar reglas a {agent}",
+    pick: "ELIGE DE QUÉ AGENTE COPIAR",
+    none: "Ningún otro agente tiene reglas para copiar.",
+    overwrite: "{agent} ya tiene reglas; copiar las sobrescribirá.",
+    preview: "VISTA PREVIA",
+    selectPrompt: "Selecciona un agente para ver sus reglas.",
+    copy: "Copiar reglas",
   },
   agent: {
     detected: "detectado",

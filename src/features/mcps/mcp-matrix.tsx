@@ -9,6 +9,7 @@ import { agentMeta } from "@/lib/agents";
 import type { AgentScan } from "@/lib/types";
 import {
   ArrowRight,
+  Copy,
   Info,
   List,
   Pencil,
@@ -20,6 +21,7 @@ import {
 import { motion } from "motion/react";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { AddMcpDialog } from "./add-mcp-dialog";
+import { CopyRulesDialog } from "./copy-rules-dialog";
 import { DetailDialog, type DetailTarget } from "./detail-dialog";
 import { StatCards } from "./stat-cards";
 import { useMcpActions } from "./use-mcp-actions";
@@ -80,11 +82,12 @@ function RowLabel({ name, tag, onInfo }: { name: string; tag: string; onInfo: ()
 }
 
 /** Icono de acción en la esquina superior derecha de la celda (señal de qué hará el clic). */
-function CellIcon({ kind }: { kind: "remove" | "edit" }) {
+function CellIcon({ kind }: { kind: "remove" | "edit" | "copy" }) {
   const t = useT();
   const cfg = {
     remove: { Icon: Trash2, label: t("matrix.remove"), color: "group-hover:text-danger" },
     edit: { Icon: Pencil, label: t("matrix.edit"), color: "group-hover:text-foreground" },
+    copy: { Icon: Copy, label: t("matrix.copy"), color: "group-hover:text-foreground" },
   }[kind];
   return (
     <cfg.Icon
@@ -113,6 +116,7 @@ export function McpMatrix({ query }: { query: string }) {
   const [showAdd, setShowAdd] = useState(false);
   const [detail, setDetail] = useState<DetailTarget | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [rulesTarget, setRulesTarget] = useState<string | null>(null);
 
   // Detecta si la grilla desborda horizontalmente (más agentes de los que caben) y en
   // qué extremo está el scroll, para mostrar el indicador de "hay más agentes →".
@@ -514,32 +518,41 @@ export function McpMatrix({ query }: { query: string }) {
                 </div>
                 {row.cells.map((cell, i) => {
                   const agent = agents[i];
-                  const editable = row.name === "default model";
+                  const isModel = row.name === "default model";
+                  const isRules = row.name === "rules";
+                  const actionable = isModel || isRules;
 
                   const onClick = async () => {
-                    const current = cell.value === "not set" ? "" : cell.value;
-                    const next = await dialog.prompt({
-                      title: t("matrix.modelTitle"),
-                      message: t("matrix.modelMsg", { agent: agentMeta(agent.id).name }),
-                      defaultValue: current,
-                      placeholder: t("matrix.modelPlaceholder"),
-                    });
-                    if (next?.trim()) actions.setModel(agent.id, next.trim());
+                    if (isModel) {
+                      const current = cell.value === "not set" ? "" : cell.value;
+                      const next = await dialog.prompt({
+                        title: t("matrix.modelTitle"),
+                        message: t("matrix.modelMsg", { agent: agentMeta(agent.id).name }),
+                        defaultValue: current,
+                        placeholder: t("matrix.modelPlaceholder"),
+                      });
+                      if (next?.trim()) actions.setModel(agent.id, next.trim());
+                    } else if (isRules) {
+                      setRulesTarget(agent.id);
+                    }
                   };
-                  const Tag = editable ? "button" : "div";
+                  const Tag = actionable ? "button" : "div";
 
                   return (
                     <Tag
                       key={agent.id}
-                      type={editable ? "button" : undefined}
-                      onClick={editable ? onClick : undefined}
-                      disabled={editable ? actions.busy : undefined}
-                      title={editable ? t("matrix.editModel") : ""}
+                      type={actionable ? "button" : undefined}
+                      onClick={actionable ? onClick : undefined}
+                      disabled={isModel ? actions.busy : undefined}
+                      title={
+                        isModel ? t("matrix.editModel") : isRules ? t("matrix.copyRulesHint") : ""
+                      }
                       className={`group relative flex min-w-0 flex-col gap-1.5 border-border border-r border-b p-4 text-left last:border-r-0 ${
-                        editable ? "cursor-pointer hover:bg-elevated-2" : ""
+                        actionable ? "cursor-pointer hover:bg-elevated-2" : ""
                       }`}
                     >
-                      {editable && <CellIcon kind="edit" />}
+                      {isModel && <CellIcon kind="edit" />}
+                      {isRules && <CellIcon kind="copy" />}
                       <CellBody status={cell.status} changeKey={cell.value}>
                         <div className="truncate text-muted-foreground text-xs">
                           {showVal(cell.value)}
@@ -572,6 +585,8 @@ export function McpMatrix({ query }: { query: string }) {
       {selectedAgent && <AgentDrawer agent={selectedAgent} onClose={() => setSelectedId(null)} />}
 
       <DetailDialog target={detail} onClose={() => setDetail(null)} />
+
+      <CopyRulesDialog target={rulesTarget} agents={agents} onClose={() => setRulesTarget(null)} />
     </div>
   );
 }
