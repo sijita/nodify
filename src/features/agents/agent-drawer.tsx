@@ -1,12 +1,14 @@
 import { AgentGlyph } from "@/components/agent-glyph";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useDialog } from "@/components/ui/dialog";
 import { DetailDialog, type DetailTarget } from "@/features/mcps/detail-dialog";
+import { useMcpActions } from "@/features/mcps/use-mcp-actions";
 import { useT } from "@/i18n";
 import { agentMeta } from "@/lib/agents";
 import { listProviders, readRules, writeRules } from "@/lib/tauri";
 import type { AgentScan, ProviderInfo } from "@/lib/types";
-import { Blocks, Info, Save, Sparkles, X } from "lucide-react";
+import { Blocks, Info, Save, Sparkles, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { mutate } from "swr";
 
@@ -94,40 +96,87 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-/** Fila-tarjeta clicable (MCP o skill): icono + nombre + subtítulo truncado + info al hover. */
+/**
+ * Fila-tarjeta (MCP o skill): el área principal abre el detalle; el botón de papelera
+ * (visible al hover) lo elimina de este agente. Contenedor `div` con dos botones para no
+ * anidar botones (HTML inválido).
+ */
 function RowCard({
   icon: Icon,
   name,
   subtitle,
   onClick,
+  onRemove,
+  removeLabel,
+  disabled,
 }: {
   icon: typeof Blocks;
   name: string;
   subtitle: string;
   onClick: () => void;
+  onRemove: () => void;
+  removeLabel: string;
+  disabled?: boolean;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="group flex w-full items-center gap-3 rounded-[var(--radius-sm)] border border-border p-3 text-left hover:border-border-strong hover:bg-elevated-2"
-    >
-      <Icon size={14} className="shrink-0 text-faint" />
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-[13px]">{name}</div>
-        <div className="truncate text-[11px] text-faint">{subtitle || "—"}</div>
-      </div>
-      <Info
-        size={12}
-        className="shrink-0 text-faint opacity-0 transition-opacity group-hover:opacity-100"
-      />
-    </button>
+    <div className="group flex items-center rounded-[var(--radius-sm)] border border-border pr-1 hover:border-border-strong hover:bg-elevated-2">
+      <button
+        type="button"
+        onClick={onClick}
+        className="flex min-w-0 flex-1 items-center gap-3 p-3 text-left"
+      >
+        <Icon size={14} className="shrink-0 text-faint" />
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-[13px]">{name}</div>
+          <div className="truncate text-[11px] text-faint">{subtitle || "—"}</div>
+        </div>
+        <Info
+          size={12}
+          className="shrink-0 text-faint opacity-0 transition-opacity group-hover:opacity-100"
+        />
+      </button>
+      <button
+        type="button"
+        onClick={onRemove}
+        disabled={disabled}
+        aria-label={removeLabel}
+        title={removeLabel}
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-sm)] text-faint opacity-0 transition-colors hover:bg-surface hover:text-danger group-hover:opacity-100 disabled:pointer-events-none disabled:opacity-30"
+      >
+        <Trash2 size={13} />
+      </button>
+    </div>
   );
 }
 
 function Overview({ agent }: { agent: AgentScan }) {
   const t = useT();
+  const dialog = useDialog();
+  const actions = useMcpActions();
+  const meta = agentMeta(agent.id);
   const [detail, setDetail] = useState<DetailTarget | null>(null);
+
+  const removeMcp = async (name: string) => {
+    const ok = await dialog.confirm({
+      title: t("matrix.deleteMcpTitle"),
+      message: t("matrix.deleteMcpMsg", { name, agent: meta.name }),
+      confirmLabel: t("common.delete"),
+      danger: true,
+    });
+    if (ok) actions.remove(agent.id, name);
+  };
+
+  const removeSkill = async (name: string) => {
+    const ok = await dialog.confirm({
+      title: t("matrix.deleteSkillTitle"),
+      message: t("matrix.deleteSkillMsg", { name, agent: meta.name }),
+      confirmLabel: t("common.delete"),
+      danger: true,
+    });
+    if (ok) actions.removeSkill(agent.id, name);
+  };
+
+  const removeLabel = t("matrix.removeFrom", { agent: meta.name });
 
   return (
     <>
@@ -146,9 +195,12 @@ function Overview({ agent }: { agent: AgentScan }) {
                   icon={Blocks}
                   name={m.name}
                   subtitle={m.target}
+                  removeLabel={removeLabel}
+                  disabled={actions.busy}
                   onClick={() =>
                     setDetail({ kind: "mcp", agentId: agent.id, mcp: m, presentIn: [agent.id] })
                   }
+                  onRemove={() => removeMcp(m.name)}
                 />
               </li>
             ))}
@@ -167,6 +219,8 @@ function Overview({ agent }: { agent: AgentScan }) {
                   icon={Sparkles}
                   name={s.name}
                   subtitle={s.description}
+                  removeLabel={removeLabel}
+                  disabled={actions.busy}
                   onClick={() =>
                     setDetail({
                       kind: "skill",
@@ -176,12 +230,15 @@ function Overview({ agent }: { agent: AgentScan }) {
                       presentIn: [agent.id],
                     })
                   }
+                  onRemove={() => removeSkill(s.name)}
                 />
               </li>
             ))}
           </ul>
         )}
       </Section>
+
+      {actions.error && <p className="mb-4 text-danger text-xs">{`> ${actions.error}`}</p>}
 
       <DetailDialog target={detail} onClose={() => setDetail(null)} />
     </>
