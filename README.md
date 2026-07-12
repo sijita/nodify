@@ -97,21 +97,24 @@ escribe de vuelta preservando lo que no entiende.**
 - **Modal de detalle**: clic en cualquier celda abre un panel con la config completa del MCP (transporte,
   endpoint/comando, estado, env vars referenciadas, agentes en los que está presente).
 - **Instalar** un MCP en un agente (modal: stdio o HTTP, args, env vars, headers con editor de pares clave/valor).
-- **Eliminar** un MCP (con confirmación).
+- **Eliminar** un MCP (con confirmación; también desde el detalle del agente).
 - **Compartir**: copiar un MCP de un agente a otro **traduciendo el formato** automáticamente
   (p. ej. `command` string ↔ array, `env` ↔ `environment`, `Authorization` header ↔ `bearer_token_env_var`).
 
 ### 🧩 Skills
 - Descubrimiento de Skills (`SKILL.md` con frontmatter) en los directorios de cada agente.
+- **Crear una Skill nueva** en uno o varios agentes: modo guiado (nombre + descripción + instrucciones,
+  con consejos de buenas prácticas) o pegando un `SKILL.md` ya hecho.
 - **Modal de detalle**: clic en la celda muestra la descripción extraída del frontmatter y el contenido
   completo del `SKILL.md`.
-- **Compartir** una Skill (copia recursiva de la carpeta) y **eliminar**.
-- **Visibilidad de agentes**: oculta o muestra columnas (agentes) con un toggle en la barra superior.
-  Solo afecta la vista — Nodify sigue leyendo y escribiendo la config del agente oculto con normalidad.
+- **Compartir** una Skill (copia recursiva de la carpeta) y **eliminar** (también desde el detalle del agente).
+- **Visibilidad y orden de agentes**: oculta/muestra columnas y reordénalas (flechas ▲▼) desde la barra
+  superior. Solo afecta la vista — Nodify sigue leyendo y escribiendo la config del agente con normalidad.
 
 ### ⚙️ Config por agente
 - **Modelo por defecto**: leer y editar, con detección de divergencia entre agentes.
-- **Reglas** (`CLAUDE.md` / `AGENTS.md`): editor integrado en el panel de detalle.
+- **Reglas** (`CLAUDE.md` / `AGENTS.md`): editor integrado en el panel de detalle, y **copiar las reglas
+  de un agente a otro** (con vista previa) desde la matriz.
 - **Proveedores**: leer id / nombre / `base_url` y el **nombre de la env var** de la key
   (nunca el valor).
 

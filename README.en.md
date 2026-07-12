@@ -96,20 +96,23 @@ preserving what it doesn't understand.**
 - **Detail modal**: clicking any cell opens a panel with the full MCP config (transport,
   endpoint/command, status, referenced env vars, agents it is present in).
 - **Install** an MCP on an agent (modal: stdio or HTTP, args, env vars, headers with a key/value pair editor).
-- **Remove** an MCP (with confirmation).
+- **Remove** an MCP (with confirmation; also from the agent detail panel).
 - **Share**: copy an MCP from one agent to another **translating the format** automatically
   (e.g. `command` string ↔ array, `env` ↔ `environment`, `Authorization` header ↔ `bearer_token_env_var`).
 
 ### 🧩 Skills
 - Skill discovery (`SKILL.md` with frontmatter) in each agent's directories.
+- **Create a new Skill** in one or more agents: guided mode (name + description + instructions, with
+  best-practice tips) or by pasting a ready-made `SKILL.md`.
 - **Detail modal**: clicking a cell shows the description from frontmatter and the full `SKILL.md` content.
-- **Share** a Skill (recursive folder copy) and **remove**.
-- **Agent visibility**: hide or show columns (agents) via a toggle in the top bar.
-  View-only — Nodify keeps reading and writing the hidden agent's config normally.
+- **Share** a Skill (recursive folder copy) and **remove** (also from the agent detail panel).
+- **Agent visibility & order**: hide/show columns and reorder them (▲▼ arrows) from the top bar.
+  View-only — Nodify keeps reading and writing the agent's config normally.
 
 ### ⚙️ Per-agent config
 - **Default model**: read and edit, with divergence detection across agents.
-- **Rules** (`CLAUDE.md` / `AGENTS.md`): editor built into the detail panel.
+- **Rules** (`CLAUDE.md` / `AGENTS.md`): editor built into the detail panel, plus **copy rules from one
+  agent to another** (with a preview) from the matrix.
 - **Providers**: read id / name / `base_url` and the **env var name** of the key
   (never the value).
 
