@@ -14,8 +14,8 @@ use nodify_core::mcp::Transport;
 use nodify_core::{diff_bundles, Adapter, CanonicalMcp, DiffEntry, SecretValue, SyncBundle};
 use nodify_io::detect::AgentId;
 use nodify_io::{
-    config_path, copy_skill, model_source_path, remove_skill as remove_skill_fs, rules_path,
-    safe_write, skills_dir,
+    config_path, copy_skill, create_skill as create_skill_fs, model_source_path,
+    remove_skill as remove_skill_fs, rules_path, safe_write, skills_dir,
 };
 use serde::Deserialize;
 
@@ -143,6 +143,23 @@ pub fn share_skill(from_id: String, to_id: String, name: String) -> Result<(), S
 pub fn remove_skill(agent_id: String, name: String) -> Result<(), String> {
     let (id, _) = adapter_for(&agent_id)?;
     remove_skill_fs(&skills_dir(id, &current_env()), &name).map_err(|e| e.to_string())
+}
+
+/// Crea un skill nuevo (`<skills_dir>/<name>/SKILL.md`) en el agente con el contenido dado.
+/// Valida el nombre para que sea un segmento de carpeta seguro (sin travesía de rutas).
+#[tauri::command]
+pub fn create_skill(agent_id: String, name: String, content: String) -> Result<(), String> {
+    let (id, _) = adapter_for(&agent_id)?;
+    let name = name.trim();
+    if name.is_empty()
+        || name.contains('/')
+        || name.contains('\\')
+        || name == "."
+        || name == ".."
+    {
+        return Err("nombre de skill inválido (sin '/', '\\' ni vacío)".into());
+    }
+    create_skill_fs(&skills_dir(id, &current_env()), name, &content).map_err(|e| e.to_string())
 }
 
 /// Contenido completo del `SKILL.md` de un skill (frontmatter + cuerpo), para el modal

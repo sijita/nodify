@@ -1,5 +1,6 @@
 import {
   type McpInput,
+  createSkill,
   installMcp,
   removeMcp,
   removeSkill,
@@ -41,5 +42,7 @@ export function useMcpActions() {
     shareSkill: (fromId: string, toId: string, name: string) =>
       run(() => shareSkill(fromId, toId, name)),
     removeSkill: (agentId: string, name: string) => run(() => removeSkill(agentId, name)),
+    createSkill: (agentId: string, name: string, content: string) =>
+      run(() => createSkill(agentId, name, content)),
   };
 }

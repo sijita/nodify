@@ -192,6 +192,17 @@ export function mockShareSkill(fromId: string, toId: string, name: string): void
   else to.skills.push(copy);
 }
 
+/** Crea un skill en el preview: extrae la descripción del frontmatter del contenido. */
+export function mockCreateSkill(agentId: string, name: string, content: string): void {
+  const agent = state.find((a) => a.id === agentId);
+  if (!agent) return;
+  const description = content.match(/^description:\s*"?(.+?)"?\s*$/m)?.[1] ?? "";
+  const skill = { name, description, enabled: true };
+  const i = agent.skills.findIndex((s) => s.name === name);
+  if (i >= 0) agent.skills[i] = skill;
+  else agent.skills.push(skill);
+}
+
 export function mockRemoveSkill(agentId: string, name: string): void {
   const agent = state.find((a) => a.id === agentId);
   if (agent) agent.skills = agent.skills.filter((s) => s.name !== name);

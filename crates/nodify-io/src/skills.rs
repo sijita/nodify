@@ -53,6 +53,14 @@ pub fn copy_skill(from_dir: &Path, to_dir: &Path, name: &str) -> std::io::Result
     copy_dir_recursive(&src, &dst)
 }
 
+/// Crea (o sobrescribe) el `SKILL.md` del skill `name` en `dir/name/SKILL.md`,
+/// creando los directorios necesarios. Usado para añadir un skill nuevo.
+pub fn create_skill(dir: &Path, name: &str, content: &str) -> std::io::Result<()> {
+    let skill_dir = dir.join(name);
+    fs::create_dir_all(&skill_dir)?;
+    fs::write(skill_dir.join("SKILL.md"), content)
+}
+
 /// Elimina la carpeta del skill `name` bajo `dir`. Idempotente.
 pub fn remove_skill(dir: &Path, name: &str) -> std::io::Result<()> {
     let target = dir.join(name);
@@ -98,6 +106,20 @@ mod tests {
         let _ = fs::remove_dir_all(&d);
         fs::create_dir_all(&d).unwrap();
         d
+    }
+
+    #[test]
+    fn create_skill_writes_skill_md_and_is_scannable() {
+        let root = tmp();
+        create_skill(
+            &root,
+            "my-skill",
+            "---\nname: my-skill\ndescription: \"X\"\n---\nbody",
+        )
+        .unwrap();
+        let content = fs::read_to_string(root.join("my-skill").join("SKILL.md")).unwrap();
+        assert!(content.contains("body"));
+        assert!(scan_skills(&root).iter().any(|s| s.name == "my-skill"));
     }
 
     #[test]

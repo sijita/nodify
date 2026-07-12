@@ -21,6 +21,7 @@ import {
 import { motion } from "motion/react";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { AddMcpDialog } from "./add-mcp-dialog";
+import { AddSkillDialog } from "./add-skill-dialog";
 import { CopyRulesDialog } from "./copy-rules-dialog";
 import { DetailDialog, type DetailTarget } from "./detail-dialog";
 import { StatCards } from "./stat-cards";
@@ -114,6 +115,7 @@ export function McpMatrix({ query }: { query: string }) {
   const t = useT();
   const showVal = (v: string) => (v === "not set" ? t("matrix.notSet") : v);
   const [showAdd, setShowAdd] = useState(false);
+  const [showAddSkill, setShowAddSkill] = useState(false);
   const [detail, setDetail] = useState<DetailTarget | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [rulesTarget, setRulesTarget] = useState<string | null>(null);
@@ -414,7 +416,7 @@ export function McpMatrix({ query }: { query: string }) {
               </div>
             ))}
 
-            {/* banda SKILLS (solo lectura; compartir/enable llegan luego) */}
+            {/* banda SKILLS */}
             <div className="col-span-full border-border border-b bg-elevated">
               <div className="sticky left-0 flex w-fit items-center gap-3 px-4 py-2">
                 <span className="flex items-center gap-2.5 font-semibold text-[11px] tracking-[0.16em] text-muted-foreground">
@@ -422,6 +424,15 @@ export function McpMatrix({ query }: { query: string }) {
                   {t("matrix.skills")}
                 </span>
                 <span className="text-[11px] text-faint">{skillRows.length}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAddSkill(true)}
+                  disabled={agentIds.length === 0}
+                >
+                  <Plus size={13} />
+                  Skill
+                </Button>
               </div>
             </div>
 
@@ -580,6 +591,13 @@ export function McpMatrix({ query }: { query: string }) {
         agentIds={agentIds}
         onClose={() => setShowAdd(false)}
         onSubmit={(agentId, mcp) => actions.install(agentId, mcp)}
+      />
+
+      <AddSkillDialog
+        open={showAddSkill}
+        agentIds={agentIds}
+        onClose={() => setShowAddSkill(false)}
+        onCreate={(agentId, name, content) => actions.createSkill(agentId, name, content)}
       />
 
       {selectedAgent && <AgentDrawer agent={selectedAgent} onClose={() => setSelectedId(null)} />}

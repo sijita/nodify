@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import {
+  mockCreateSkill,
   mockExportBundle,
   mockInstall,
   mockListProviders,
@@ -67,6 +68,12 @@ export function shareSkill(fromId: string, toId: string, name: string): Promise<
 export function removeSkill(agentId: string, name: string): Promise<void> {
   if (!isTauri()) return Promise.resolve(mockRemoveSkill(agentId, name));
   return invoke("remove_skill", { agentId, name });
+}
+
+/** Crea un skill nuevo (`<skills>/<name>/SKILL.md`) en el agente con el contenido dado. */
+export function createSkill(agentId: string, name: string, content: string): Promise<void> {
+  if (!isTauri()) return Promise.resolve(mockCreateSkill(agentId, name, content));
+  return invoke("create_skill", { agentId, name, content });
 }
 
 /** Contenido del `SKILL.md` (frontmatter + cuerpo) para el modal de detalle. */
