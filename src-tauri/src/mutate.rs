@@ -236,8 +236,15 @@ fn apply_bundle(bundle: &SyncBundle) -> Result<(), String> {
 
 fn read_repo_bundle(repo_dir: &str) -> Result<SyncBundle, String> {
     let path = Path::new(repo_dir).join(BUNDLE_FILE);
-    let raw = std::fs::read_to_string(&path)
-        .map_err(|e| format!("no se pudo leer {}: {e}", path.display()))?;
+    let raw = match std::fs::read_to_string(&path) {
+        Ok(s) => s,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+            return Err(format!(
+                "el repo aún no tiene un bundle ({BUNDLE_FILE}); haz Push primero"
+            ));
+        }
+        Err(e) => return Err(format!("no se pudo leer {}: {e}", path.display())),
+    };
     serde_json::from_str(&raw).map_err(|e| e.to_string())
 }
 
@@ -299,6 +306,20 @@ fn git_clone(url: &str, dest: &str) -> Result<(), String> {
     Ok(())
 }
 
+/// Como `git`, pero devuelve el stdout (trim). Para consultar refs sin abortar el flujo.
+fn git_capture(repo_dir: &str, args: &[&str]) -> Result<String, String> {
+    let out = Command::new("git")
+        .arg("-C")
+        .arg(repo_dir)
+        .args(args)
+        .output()
+        .map_err(|e| format!("git no disponible: {e}"))?;
+    if !out.status.success() {
+        return Err(String::from_utf8_lossy(&out.stderr).trim().to_string());
+    }
+    Ok(String::from_utf8_lossy(&out.stdout).trim().to_string())
+}
+
 /// Resuelve el destino de sync a una ruta local utilizable. Si es una ruta local, la
 /// devuelve tal cual (comportamiento previo). Si es una URL, clona el repo en la caché
 /// la primera vez y lo pone al día con el remoto (`fetch` + `reset --hard`) las siguientes,
@@ -312,8 +333,14 @@ fn resolve_repo(repo: &str) -> Result<String, String> {
     let dir_str = dir.display().to_string();
     if dir.join(".git").exists() {
         git(&dir_str, &["fetch", "--prune", "origin"])?;
-        // Alinea la copia local con el remoto; la caché es de uso exclusivo de Nodify.
-        git(&dir_str, &["reset", "--hard", "@{u}"])?;
+        // Alinea la copia local con la rama por defecto del remoto (la caché es de uso
+        // exclusivo de Nodify). Si el repo está vacío aún no hay `origin/HEAD`, así que
+        // no hay nada que alinear y se deja la rama sin nacer para el primer push.
+        if let Ok(head) = git_capture(&dir_str, &["rev-parse", "--abbrev-ref", "origin/HEAD"]) {
+            if !head.is_empty() {
+                git(&dir_str, &["reset", "--hard", &head])?;
+            }
+        }
     } else {
         if let Some(parent) = dir.parent() {
             std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
@@ -349,14 +376,19 @@ pub fn sync_push(repo_dir: String) -> Result<(), String> {
     git(&dir, &["add", BUNDLE_FILE])?;
     // commit puede fallar si no hay cambios; se ignora ese caso concreto
     let _ = git(&dir, &["commit", "-m", "nodify: sync bundle"]);
-    git(&dir, &["push"])
+    // `-u origin HEAD` cubre el primer push a un repo vacío (sin upstream configurado).
+    git(&dir, &["push", "-u", "origin", "HEAD"])
 }
 
 /// Pull: trae el repo y aplica el bundle al dispositivo actual. Acepta ruta local o URL.
 #[tauri::command]
 pub fn sync_pull(repo_dir: String) -> Result<(), String> {
     let dir = resolve_repo(&repo_dir)?;
-    git(&dir, &["pull", "--ff-only"])?;
+    // Para una URL, `resolve_repo` ya dejó la caché al día (fetch + reset). Para una ruta
+    // local, es el propio repo del usuario y sí hay que traer los cambios del remoto.
+    if !is_remote_url(&repo_dir) {
+        git(&dir, &["pull", "--ff-only"])?;
+    }
     let incoming = read_repo_bundle(&dir)?;
     apply_bundle(&incoming)
 }
